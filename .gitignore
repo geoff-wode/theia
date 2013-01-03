@@ -1,0 +1,13 @@
+*.suo
+
+*.vcproj.filters
+
+*.vcproj.user
+
+*.pch
+
+bin/
+
+lib/
+
+intermediate/
