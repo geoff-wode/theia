@@ -1,8 +1,8 @@
 *.suo
 
-*.vcproj.filters
+*.filters
 
-*.vcproj.user
+*.user
 
 *.pch
 
