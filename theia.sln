@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "theia", "theia\theia.vcxproj", "{72C1C2A6-2ED5-4EDB-A9FA-6707D10185ED}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "theia_test", "theia_test\theia_test.vcxproj", "{4A4F95EA-AE4A-403B-A6E0-37E4CC5B10EF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{72C1C2A6-2ED5-4EDB-A9FA-6707D10185ED} = {72C1C2A6-2ED5-4EDB-A9FA-6707D10185ED}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{72C1C2A6-2ED5-4EDB-A9FA-6707D10185ED}.Debug|Win32.ActiveCfg = Debug|Win32
+		{72C1C2A6-2ED5-4EDB-A9FA-6707D10185ED}.Debug|Win32.Build.0 = Debug|Win32
+		{72C1C2A6-2ED5-4EDB-A9FA-6707D10185ED}.Release|Win32.ActiveCfg = Release|Win32
+		{72C1C2A6-2ED5-4EDB-A9FA-6707D10185ED}.Release|Win32.Build.0 = Release|Win32
+		{4A4F95EA-AE4A-403B-A6E0-37E4CC5B10EF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4A4F95EA-AE4A-403B-A6E0-37E4CC5B10EF}.Debug|Win32.Build.0 = Debug|Win32
+		{4A4F95EA-AE4A-403B-A6E0-37E4CC5B10EF}.Release|Win32.ActiveCfg = Release|Win32
+		{4A4F95EA-AE4A-403B-A6E0-37E4CC5B10EF}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
