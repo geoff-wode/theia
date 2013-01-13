@@ -193,7 +193,7 @@ int wgl_LoadFunctions(HDC hdc)
 {
   ClearExtensionVars();
   
-  _ptrc_wglGetExtensionsStringARB = IntGetProcAddress("wglGetExtensionsStringARB");
+  _ptrc_wglGetExtensionsStringARB = (const char* (__stdcall *)(HDC)) IntGetProcAddress("wglGetExtensionsStringARB");
   if(!_ptrc_wglGetExtensionsStringARB) return wgl_LOAD_FAILED;
   
   ProcExtsFromExtString((const char *)_ptrc_wglGetExtensionsStringARB(hdc));

@@ -4,7 +4,7 @@
 #if ! defined(GL_LOADER)
 #define GL_LOADER
 
-#include "src/wgl_wgl.h"
-#include "src/gl_4_3.h"
+#include <renderer/gl/gl_4_3.h>
+#include <renderer/gl/wgl_wgl.h>
 
 #endif // GL_LOADER

@@ -1,5 +1,7 @@
 /**
- Entry point to the system.
+ The Game class is the core object that drives all user interaction with the system.
+ The application is kick-started by invoking the user's implementation of Program::Run
+ which, in turn, must instantiate the user's game implementation and call Start on it.
  */
 
 #include <stdio.h>
@@ -9,26 +11,27 @@
 #include <SDL.h>
 #include <core/game.h>
 #include <renderer/graphics_device.h>
+#include <core/keyboard.h>
+#include <core/include/keyboard_impl.h>
 
 using namespace theia;
-using namespace theia::core;
 using namespace theia::renderer;
 
 //----------------------------------------------------------
 
 static bool quit = false;
 static bool isActive = true;
-static theia::core::Game* theGame = NULL;
+static theia::Game* theGame = NULL;
 
 //----------------------------------------------------------
 
-static void HandleEvent(const SDL_Event& event);
+static void HandleEvent(const SDL_Event& event, Game* const game);
 
 // Update the internal state of the game.
-static void UpdateGame(void);
+static void UpdateGame(Game* const game);
 
 // Process the next frame of game logic, using the elapsed time.
-static void ProcessNextFrame(void);
+static void ProcessNextFrame(Game* const game);
 
 static void OnActiveEvent(const SDL_ActiveEvent& event);
 static void OnKeyboardEvent(const SDL_KeyboardEvent& event);
@@ -36,78 +39,88 @@ static void OnQuitEvent(const SDL_QuitEvent& event);
 
 //----------------------------------------------------------
 
-theia::core::Game::Game()
+theia::Game::Game()
 {
 }
 
 //----------------------------------------------------------
 
-theia::core::Game::~Game()
+theia::Game::~Game()
 {
 }
 
 //----------------------------------------------------------
 
-void theia::core::Game::Initialise()
+void theia::Game::Initialise()
 {
 }
 
 //----------------------------------------------------------
 
-void theia::core::Game::LoadContent()
+void theia::Game::DeviceReady()
 {
 }
 
 //----------------------------------------------------------
 
-void theia::core::Game::UnloadContent()
+void theia::Game::DeviceLost()
 {
 }
 
 //----------------------------------------------------------
 
-void theia::core::Game::Update(uint32_t elapsed)
+void theia::Game::Stopping()
 {
 }
 
 //----------------------------------------------------------
 
-void theia::core::Game::Render(uint32_t elapsed)
+void theia::Game::Update(uint32_t elapsed)
 {
-  SDL_GL_SwapBuffers();
 }
 
 //----------------------------------------------------------
 
-void theia::core::Game::Start()
+void theia::Game::Render(uint32_t elapsed)
 {
-  theGame = this;
+}
 
+//----------------------------------------------------------
+
+void theia::Game::Start()
+{
   Initialise();
-  LoadContent();
+  DeviceReady();
 
   while (!quit)
   {
     // Run until there is an event to be processed...
     while (!SDL_PollEvent(NULL))
     {
-      UpdateGame();
+      UpdateGame(this);
     }
 
     // Process all events...
     SDL_Event event;
     while (!quit && SDL_PollEvent(&event))
     {
-      HandleEvent(event);
+      HandleEvent(event, this);
     }
   }
 
-  UnloadContent();
+  DeviceLost();
 }
 
 //----------------------------------------------------------
 
-static void HandleEvent(const SDL_Event& event)
+void Game::Stop()
+{
+  quit = true;
+}
+
+//----------------------------------------------------------
+
+static void HandleEvent(const SDL_Event& event, Game* const game)
 {
   switch (event.type)
   {
@@ -128,7 +141,7 @@ static void HandleEvent(const SDL_Event& event)
 
 //----------------------------------------------------------
 
-static void UpdateGame(void)
+static void UpdateGame(Game* const game)
 {
   static bool wasActive = false;
 
@@ -139,7 +152,7 @@ static void UpdateGame(void)
       // Do one-time resuming of audio, etc...
       wasActive = false;
     }
-    ProcessNextFrame();
+    ProcessNextFrame(game);
     SDL_Delay(2);
   }
   else
@@ -173,18 +186,26 @@ static void OnActiveEvent(const SDL_ActiveEvent& event)
 
 static void OnKeyboardEvent(const SDL_KeyboardEvent& event)
 {
+  if (SDL_KEYDOWN == event.type)
+  {
+    Keyboard::KeyWasPressed(event.keysym.sym);
+  }
+  else
+  {
+    Keyboard::KeyWasReleased(event.keysym.sym);
+  }
 }
 
 //----------------------------------------------------------
 
 static void OnQuitEvent(const SDL_QuitEvent& event)
 {
-  quit = true;
+  theGame->Stop();
 }
 
 //----------------------------------------------------------
 
-static void ProcessNextFrame(void)
+static void ProcessNextFrame(Game* const game)
 {
   static Uint32 now = 0;
   static uint32_t lastUpdate = 0;
@@ -195,14 +216,16 @@ static void ProcessNextFrame(void)
   uint32_t renderDelta = now - lastRender;
 
   // Run the update logic at a variable rate...
-  theGame->Update(updateDelta);
+  game->Update(updateDelta);
   lastUpdate = now;
 
   // Run the render logic only at the screen's refresh rate (aiming for 60Hz)...
   const uint32_t ScreenRefreshRate = 1000 / 60;
   if (renderDelta > ScreenRefreshRate)
   {
-    theGame->Render(renderDelta);
+    game->Render(renderDelta);
     lastRender = now;
+
+    SDL_GL_SwapBuffers();
   }
 }

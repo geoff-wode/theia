@@ -6,7 +6,11 @@
 #define __THEIA_GRAPHICS_DEVICE__
 
 #include <stdint.h>
-#include <utils/property.h>
+#include <glm/glm.hpp>
+
+#include <renderer/colour.h>
+#include <renderer/render_state/colour_mask.h>
+#include <renderer/render_state/depth_stencil.h>
 
 namespace theia
 {
@@ -14,11 +18,17 @@ namespace theia
   {
     struct GraphicsDevice
     {
-      static void Initialise();
+      GraphicsDevice();
+      ~GraphicsDevice();
 
-      static Property<uint32_t> Width;
-      static Property<uint32_t> Height;
-      static Property<uint32_t> BPP;
+      bool      FullScreen;
+      uint32_t  BackBufferWidth;
+      uint32_t  BackBufferHeight;
+      DepthStencilFormat::e DepthBufferFormat;
+
+      void Initialise();
+
+      void Clear(const Colour& colour);
     };
   }
 }
