@@ -77,49 +77,6 @@
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Lib>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="core\src\game.cpp" />
-    <ClCompile Include="core\src\keyboard.cpp" />
-    <ClCompile Include="core\src\main.cpp" />
-    <ClCompile Include="renderer\gl\gl_4_3.c" />
-    <ClCompile Include="renderer\src\buffer.cpp" />
-    <ClCompile Include="renderer\src\colour.cpp" />
-    <ClCompile Include="renderer\src\graphics_device.cpp" />
-    <ClCompile Include="renderer\src\render_state\colour_mask.cpp" />
-    <ClCompile Include="renderer\gl\wgl_wgl.c" />
-    <ClCompile Include="renderer\src\shader\shader_object.cpp" />
-    <ClCompile Include="renderer\src\shader\shader_program.cpp" />
-    <ClCompile Include="renderer\src\vertex\vertex_buffer.cpp" />
-    <ClCompile Include="renderer\src\vertex\vertex_description.cpp" />
-    <ClCompile Include="utils\src\maths.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="renderer\buffer.h" />
-    <ClInclude Include="renderer\colour.h" />
-    <ClInclude Include="core\game.h" />
-    <ClInclude Include="core\include\keyboard_impl.h" />
-    <ClInclude Include="core\keyboard.h" />
-    <ClInclude Include="renderer\index_buffer.h" />
-    <ClInclude Include="renderer\render_state\clear_buffers.h" />
-    <ClInclude Include="renderer\render_state\colour_mask.h" />
-    <ClInclude Include="renderer\gl\gl_loader.h" />
-    <ClInclude Include="renderer\graphics_device.h" />
-    <ClInclude Include="renderer\gl\gl_4_3.h" />
-    <ClInclude Include="renderer\gl\wgl_wgl.h" />
-    <ClInclude Include="renderer\render_state\depth_stencil.h" />
-    <ClCompile Include="renderer\src\index_buffer.cpp">
-      <FileType>CppHeader</FileType>
-    </ClCompile>
-    <ClInclude Include="renderer\shader\shader_object.h" />
-    <ClInclude Include="renderer\shader\shader_program.h" />
-    <ClInclude Include="renderer\shader\vertex_attribute.h" />
-    <ClInclude Include="renderer\vertex\vertex_buffer.h" />
-    <ClInclude Include="renderer\vertex\vertex_description.h" />
-    <ClInclude Include="renderer\vertex\vertex_element.h" />
-    <ClInclude Include="renderer\vertex_attribute.h" />
-    <ClInclude Include="utils\maths.h" />
-    <ClInclude Include="core\property.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
