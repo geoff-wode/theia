@@ -10,6 +10,26 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\application.cpp" />
+    <ClCompile Include="src\graphics\clear_state.cpp" />
+    <ClCompile Include="src\graphics\device.cpp" />
+    <ClCompile Include="src\graphics\gl\gl_4_3.c" />
+    <ClCompile Include="src\graphics\gl\wgl_wgl.c" />
+    <ClCompile Include="src\input\keyboard.cpp" />
+    <ClCompile Include="src\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\theia\application.h" />
+    <ClInclude Include="include\theia\graphics\clear_state.h" />
+    <ClInclude Include="include\theia\graphics\device.h" />
+    <ClInclude Include="include\theia\input\keyboard.h" />
+    <ClInclude Include="include\theia\misc\debug.h" />
+    <ClInclude Include="include\theia\program.h" />
+    <ClInclude Include="src\graphics\gl\gl_4_3.h" />
+    <ClInclude Include="src\graphics\gl_loader.h" />
+    <ClInclude Include="src\graphics\gl\wgl_wgl.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{72C1C2A6-2ED5-4EDB-A9FA-6707D10185ED}</ProjectGuid>
     <RootNamespace>theia</RootNamespace>
@@ -37,14 +57,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)lib\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)intermediate\$(ProjectName)\$(Configuration)\</IntDir>
+    <LibraryPath>$(SolutionDir)lib;$(GLSDK_DIR)glimg\lib;$(SDL_DIR)lib\x86;$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir);$(GLSDK_DIR)glimg\include;$(GLSDK_DIR)glm;$(SDL_DIR)include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)lib\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)intermediate\$(ProjectName)\$(Configuration)\</IntDir>
+    <LibraryPath>$(SolutionDir)lib;$(GLSDK_DIR)glimg\lib;$(SDL_DIR)lib\x86;$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -58,6 +80,8 @@
     </Link>
     <Lib>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -75,6 +99,8 @@
     </Link>
     <Lib>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
