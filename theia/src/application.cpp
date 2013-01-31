@@ -80,6 +80,8 @@ void Application::Start()
   // in the immediately preceding Update call.
   do
   {
+    Keyboard.Update();
+
     // Use the "time" now to work out how long ago the previous call to Update was...
     currentFrame = SDL_GetTicks();
     elapsedMS = currentFrame - previousUpdateFrame;

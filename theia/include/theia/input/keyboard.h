@@ -3,7 +3,6 @@
 #if ! defined(__THEIA_INPUT_KEYBOARD__)
 #define __THEIA_INPUT_KEYBOARD__
 
-#include <vector>
 #include <SDL_keyboard.h>
 
 namespace theia
@@ -13,11 +12,13 @@ namespace theia
     class Keyboard
     {
     public:
-      Keyboard();
-      virtual ~Keyboard();
+      bool IsKeyDown(SDLKey key);
+      bool IsKeyUp(SDLKey key);
+      bool WasKeyDown(SDLKey key);
+      bool WasKeyUp(SDLKey key);
 
-      virtual bool IsKeyDown(SDLKey key) const;
-      virtual bool IsKeyUp(SDLKey key) const;
+      /// Called by the Application base class.
+      void Update();
     };
   }
 }

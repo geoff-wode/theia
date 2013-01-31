@@ -8,25 +8,38 @@ using namespace theia;
 using namespace theia::input;
 
 //--------------------------------------------------------------------
-Keyboard::Keyboard()
+
+static Uint8 currentKeyState[SDLK_LAST];
+static Uint8 previousKeyState[SDLK_LAST];
+
+//--------------------------------------------------------------------
+
+bool Keyboard::IsKeyDown(SDLKey key)
 {
+  return (1 == currentKeyState[key]);
+}
+
+bool Keyboard::IsKeyUp(SDLKey key)
+{
+  return (0 == currentKeyState[key]);
 }
 
 //--------------------------------------------------------------------
-Keyboard::~Keyboard()
+
+bool Keyboard::WasKeyDown(SDLKey key)
 {
+  return (1 == previousKeyState[key]);
+}
+
+bool Keyboard::WasKeyUp(SDLKey key)
+{
+  return (0 == previousKeyState[key]);
 }
 
 //--------------------------------------------------------------------
-bool Keyboard::IsKeyDown(SDLKey key) const
-{
-  const Uint8* keys = SDL_GetKeyState(NULL);
-  return (1 == keys[key]);
-}
 
-//--------------------------------------------------------------------
-bool Keyboard::IsKeyUp(SDLKey key) const
+void Keyboard::Update()
 {
-  const Uint8* keys = SDL_GetKeyState(NULL);
-  return (0 == keys[key]);
+  memcpy(previousKeyState, currentKeyState, sizeof(currentKeyState));
+  memcpy(currentKeyState, SDL_GetKeyState(NULL), sizeof(currentKeyState));
 }
