@@ -8,6 +8,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "theia_test", "theia_test\th
 		{72C1C2A6-2ED5-4EDB-A9FA-6707D10185ED} = {72C1C2A6-2ED5-4EDB-A9FA-6707D10185ED}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tryout", "tryout\tryout.vcxproj", "{E8AC7A22-90EF-4C86-AA69-FDD3E0C13E3F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x", "x\x.vcxproj", "{2538508F-C8C6-41CF-86E9-2EEA8733FF60}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -15,13 +19,19 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{72C1C2A6-2ED5-4EDB-A9FA-6707D10185ED}.Debug|Win32.ActiveCfg = Debug|Win32
-		{72C1C2A6-2ED5-4EDB-A9FA-6707D10185ED}.Debug|Win32.Build.0 = Debug|Win32
 		{72C1C2A6-2ED5-4EDB-A9FA-6707D10185ED}.Release|Win32.ActiveCfg = Release|Win32
 		{72C1C2A6-2ED5-4EDB-A9FA-6707D10185ED}.Release|Win32.Build.0 = Release|Win32
 		{4A4F95EA-AE4A-403B-A6E0-37E4CC5B10EF}.Debug|Win32.ActiveCfg = Debug|Win32
-		{4A4F95EA-AE4A-403B-A6E0-37E4CC5B10EF}.Debug|Win32.Build.0 = Debug|Win32
 		{4A4F95EA-AE4A-403B-A6E0-37E4CC5B10EF}.Release|Win32.ActiveCfg = Release|Win32
 		{4A4F95EA-AE4A-403B-A6E0-37E4CC5B10EF}.Release|Win32.Build.0 = Release|Win32
+		{E8AC7A22-90EF-4C86-AA69-FDD3E0C13E3F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E8AC7A22-90EF-4C86-AA69-FDD3E0C13E3F}.Debug|Win32.Build.0 = Debug|Win32
+		{E8AC7A22-90EF-4C86-AA69-FDD3E0C13E3F}.Release|Win32.ActiveCfg = Release|Win32
+		{E8AC7A22-90EF-4C86-AA69-FDD3E0C13E3F}.Release|Win32.Build.0 = Release|Win32
+		{2538508F-C8C6-41CF-86E9-2EEA8733FF60}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2538508F-C8C6-41CF-86E9-2EEA8733FF60}.Debug|Win32.Build.0 = Debug|Win32
+		{2538508F-C8C6-41CF-86E9-2EEA8733FF60}.Release|Win32.ActiveCfg = Release|Win32
+		{2538508F-C8C6-41CF-86E9-2EEA8733FF60}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -14,7 +14,7 @@
     <ClCompile Include="src\application.cpp" />
     <ClCompile Include="src\graphics\buffers\vertex_buffer.cpp" />
     <ClCompile Include="src\graphics\buffers\vertex_element.cpp" />
-    <ClCompile Include="src\graphics\buffers\vertex_format.cpp" />
+    <ClCompile Include="src\graphics\buffers\vertex_declaration.cpp" />
     <ClCompile Include="src\graphics\clear_state.cpp" />
     <ClCompile Include="src\graphics\device.cpp" />
     <ClCompile Include="src\graphics\gl\gl_4_3.c" />
@@ -27,7 +27,7 @@
     <ClInclude Include="include\theia\application.h" />
     <ClInclude Include="include\theia\graphics\buffers\vertex_buffer.h" />
     <ClInclude Include="include\theia\graphics\buffers\vertex_element.h" />
-    <ClInclude Include="include\theia\graphics\buffers\vertex_format.h" />
+    <ClInclude Include="include\theia\graphics\buffers\vertex_declaration.h" />
     <ClInclude Include="include\theia\graphics\clear_state.h" />
     <ClInclude Include="include\theia\graphics\device.h" />
     <ClInclude Include="include\theia\graphics\shaders\shader_program.h" />

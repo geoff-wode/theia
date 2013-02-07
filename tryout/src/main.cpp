@@ -14,7 +14,7 @@ Implementation of the mesh object.
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "../resources/resource.h"
-#include "shader_param.h"
+#include <shader.h>
 
 //----------------------------------------------------------
 
@@ -219,80 +219,11 @@ static const void* LoadContent(unsigned int id, unsigned int type, size_t* size)
 }
 
 //----------------------------------------------------------
-static GLuint CompileShader(const char* src, GLenum type)
+static ShaderPtr CreateShader()
 {
-  GLuint shaderObject = glCreateShader(type);
-  glShaderSource(shaderObject, 1, &src, NULL);
-  glCompileShader(shaderObject);
-
-  GLint didCompile;
-  glGetShaderiv(shaderObject, GL_COMPILE_STATUS, &didCompile);
-  if (!didCompile)
-  {
-    GLint logLength;
-    glGetShaderiv(shaderObject, GL_INFO_LOG_LENGTH, &logLength);
-    std::vector<GLchar> log(logLength+1);
-    glGetShaderInfoLog(shaderObject, logLength, NULL, log.data());
-    const char* typeName;
-    switch (type)
-    {
-      case GL_VERTEX_SHADER: typeName = "vertex"; break;
-      case GL_FRAGMENT_SHADER: typeName = "fragment"; break;
-      case GL_GEOMETRY_SHADER: typeName = "geometry"; break;
-    }
-    fprintf(stderr,"%s shader compilation failed:\n%s\n", typeName, log.data());
-  }
-
-  return shaderObject;
-}
-
-//----------------------------------------------------------
-static bool LinkShader(GLuint program, std::vector<GLuint>& objects)
-{
-  for (size_t i = 0; i < objects.size(); ++i)
-  {
-    glAttachShader(program, objects[i]);
-  }
-
-  glLinkProgram(program);
-
-  GLint didLink;
-  glGetProgramiv(program, GL_LINK_STATUS, &didLink);
-  if (!didLink)
-  {
-    GLint logLength;
-    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
-    std::vector<GLchar> log(logLength+1);
-    glGetProgramInfoLog(program, logLength, NULL, log.data());
-    fprintf(stderr, "shader program link failed:\n%s\n", log.data());
-  }
-  
-  for (size_t i = 0; i < objects.size(); ++i)
-  {
-    glDetachShader(program, objects[i]);
-  }
-
-  return (0 != didLink);
-}
-
-//----------------------------------------------------------
-static GLuint CreateShader()
-{
-  GLuint shader = glCreateProgram();
-
-  std::vector<GLuint> stages;
-  stages.push_back(CompileShader((const char*)LoadContent(IDR_TEST_VS, TEXTFILE, NULL), GL_VERTEX_SHADER));
-  stages.push_back(CompileShader((const char*)LoadContent(IDR_TEST_FS, TEXTFILE, NULL), GL_FRAGMENT_SHADER));
-
-  if (!LinkShader(shader, stages))
-  {
-    glDeleteProgram(shader);
-    shader = 0;
-  }
-
-  std::for_each(stages.begin(), stages.end(), glDeleteShader);
-
-  return shader;
+  const char* vs = (const char*)LoadContent(IDR_TEST_VS, TEXTFILE, NULL);
+  const char* fs = (const char*)LoadContent(IDR_TEST_FS, TEXTFILE, NULL);
+  return Shader::Create(vs, fs);
 }
 
 //----------------------------------------------------------
@@ -323,23 +254,22 @@ int main(int argc, char* argv[])
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
   glBindVertexArray(0);
 
-  GLuint shader = CreateShader();
-  glUseProgram(shader);
+  ShaderPtr shader = CreateShader();
   
   // Get each active shader uniform...
-  ShaderParam projectionParam(shader, "Projection");
-  ShaderParam viewParam(shader, "View");
-  ShaderParam worldParam(shader, "World");
-  glUseProgram(0);
+  Shader::ShaderParamList& params = shader->GetParameters();
+  ShaderParamPtr viewProjParam = params["ViewProjection"];
+  ShaderParamPtr worldParam = params["World"];
+  //ShaderParamPtr radiusParam = params["Radius"];
 
-  glm::mat4 view = glm::lookAt(glm::vec3(0,0,5), glm::vec3(0), glm::vec3(0,1,0));
+  glm::mat4 view = glm::lookAt(glm::vec3(0,0,10), glm::vec3(0), glm::vec3(0,1,0));
   glm::mat4 projection = glm::perspective(45.0f, (float)device.Width/(float)device.Height, 0.1f, 100.0f);
   glm::mat4 world = glm::mat4(1);
 
-  glUseProgram(shader);
-  glUniformMatrix4fv(viewParam.Location, 1, GL_FALSE, glm::value_ptr(view));
-  glUniformMatrix4fv(projectionParam.Location, 1, GL_FALSE, glm::value_ptr(projection));
-  glUseProgram(0);
+  shader->Activate();
+  //glUniform1f(radiusParam->Location, 5.0f);
+  glUniformMatrix4fv(viewProjParam->Location, 1, GL_FALSE, glm::value_ptr(projection * view));
+  shader->Deactivate();
   
   float angle = 0;
   bool stopProgram = false;
@@ -350,14 +280,14 @@ int main(int argc, char* argv[])
     glm::mat4 rot = glm::rotate(glm::mat4(1.0f), angle, glm::normalize(glm::vec3(0.75f, 0.5f, 1)));
     angle += 0.5f;
 
-    glUseProgram(shader);
-    glUniformMatrix4fv(worldParam.Location, 1, GL_FALSE, glm::value_ptr(world * rot));
+    shader->Activate();
+    glUniformMatrix4fv(worldParam->Location, 1, GL_FALSE, glm::value_ptr(world * rot));
     glBindVertexArray(vao);
 
     glDrawElements(GL_TRIANGLES, NumIndices, GL_UNSIGNED_SHORT, (const void*)0);
 
     glBindVertexArray(0);
-    glUseProgram(0);
+    shader->Deactivate();
 
     SDL_GL_SwapBuffers();
     SDL_Delay(2);
@@ -368,7 +298,6 @@ int main(int argc, char* argv[])
   glDeleteVertexArrays(1, &vao);
   glDeleteBuffers(1, &ib);
   glDeleteBuffers(1, &vb);
-  glDeleteProgram(shader);
 
   return 0;
 }

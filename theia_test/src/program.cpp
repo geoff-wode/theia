@@ -27,8 +27,8 @@ const std::vector<VertexElement>& Vertex::GetElements()
 {
   static const VertexElement elements[] =
   {
-    VertexElement(VertexElementType::Vector3, VertexElementUsage::Position, 0, offsetof(Vertex, pos)),
-    VertexElement(VertexElementType::Colour, VertexElementUsage::Colour, 0, offsetof(Vertex, colour))
+    VertexElement(VertexElementType::Vector3, offsetof(Vertex, pos)),
+    VertexElement(VertexElementType::Colour, offsetof(Vertex, colour))
   };
   static const size_t numElements = sizeof(elements)/sizeof(elements[0]);
   static std::vector<VertexElement> list(elements, elements + numElements);

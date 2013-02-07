@@ -6,9 +6,9 @@
 VERTEX_POSITION	in vec3 inPosition;
 VERTEX_COLOUR		in vec4 inColour;
 
-uniform mat4	Projection;
-uniform mat4	View;
+uniform mat4	ViewProjection;
 uniform mat4	World;
+uniform float	Radius;
 
 out VertexOutParams
 {
@@ -17,7 +17,9 @@ out VertexOutParams
 
 void main()
 {
-	gl_Position = Projection * View * World * vec4(inPosition, 1);
+	vec4 p = normalize(vec4(inPosition, 1));
+
+	gl_Position = ViewProjection * World * p;
 
 	VertexOutputs.Colour = inColour;
 }

@@ -11,37 +11,30 @@ using namespace theia::graphics;
 class VertexBufferImpl : public VertexBuffer
 {
 public:
-  VertexBufferImpl(const VertexElementList& elements);
+  VertexBufferImpl();
   virtual ~VertexBufferImpl();
   virtual void SetData(const void* const data, size_t count, size_t start);
   virtual void GetData(void* const data, size_t count, size_t start);
-  virtual size_t GetVertexStride() const;
   virtual size_t GetVertexCount() const;
-
-  virtual const VertexElementList& GetElements() const;
+  virtual const VertexDeclaration& GetVertexDeclaration() const;
+  virtual void Enable() const;
+  virtual void Disable() const;
 
   GLuint buffer;
   size_t numVertices;
-  size_t vertexStride;
-  const VertexElementList& elements;
+  VertexDeclaration vertexDecl;
 };
 
 //--------------------------------------------------------------------------------------
 
-VertexBuffer* VertexBuffer::Create(const VertexElementList& elements, size_t numVertices)
+VertexBuffer* VertexBuffer::Create(const VertexDeclaration& vertexDecl, size_t numVertices)
 {
-  VertexBufferImpl* vb = new VertexBufferImpl(elements);
+  VertexBufferImpl* vb = new VertexBufferImpl();
 
   vb->numVertices = numVertices;
+  vb->vertexDecl = vertexDecl;
 
-  // Compute the stride from the individual elements...
-  vb->vertexStride = 0;
-  for (size_t i = 0; i < vb->elements.size(); ++i)
-  {
-    vb->vertexStride += VertexElementType::Size(elements[i].Type());
-  }
-
-  const size_t sizeInBytes = numVertices * vb->vertexStride;
+  const size_t sizeInBytes = numVertices * vertexDecl.Stride();
 
   glBindBuffer(GL_ARRAY_BUFFER, vb->buffer);
   glBufferData(GL_ARRAY_BUFFER, sizeInBytes, NULL, GL_STATIC_DRAW);
@@ -64,8 +57,7 @@ VertexBuffer::~VertexBuffer()
 
 //--------------------------------------------------------------------------------------
 
-VertexBufferImpl::VertexBufferImpl(const VertexElementList& elements)
-  : elements(elements)
+VertexBufferImpl::VertexBufferImpl()
 {
   glGenBuffers(1, &buffer);
 }
@@ -80,11 +72,11 @@ VertexBufferImpl::~VertexBufferImpl()
 void VertexBufferImpl::SetData(const void* const data, size_t count, size_t start)
 {
   // Compute the byte offset into the buffer and the byte length of the intended copy...
-  const size_t copyLength = count * vertexStride;
-  const size_t copyStart = start * vertexStride;
+  const size_t copyLength = count * vertexDecl.Stride();
+  const size_t copyStart = start * vertexDecl.Stride();
 
   // Make sure the copy does not extend beyond the end of the buffer...
-  const size_t bufferSize = vertexStride * numVertices;
+  const size_t bufferSize = vertexDecl.Stride() * numVertices;
   if ((copyStart + copyLength) < bufferSize)
   {
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
@@ -101,11 +93,11 @@ void VertexBufferImpl::SetData(const void* const data, size_t count, size_t star
 void VertexBufferImpl::GetData(void* const data, size_t count, size_t start)
 {
   // Compute the byte offset into the buffer and the byte length of the intended copy...
-  const size_t copyLength = count * vertexStride;
-  const size_t copyStart = start * vertexStride;
+  const size_t copyLength = count * vertexDecl.Stride();
+  const size_t copyStart = start * vertexDecl.Stride();
 
   // Make sure the copy does not extend beyond the end of the buffer...
-  const size_t bufferSize = vertexStride * numVertices;
+  const size_t bufferSize = vertexDecl.Stride() * numVertices;
   if ((copyStart + copyLength) < bufferSize)
   {
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
@@ -119,19 +111,38 @@ void VertexBufferImpl::GetData(void* const data, size_t count, size_t start)
 }
 
 //--------------------------------------------------------------------------------------
-size_t VertexBufferImpl::GetVertexStride() const
-{
-  return vertexStride;
-}
-
-//--------------------------------------------------------------------------------------
 size_t VertexBufferImpl::GetVertexCount() const
 {
   return numVertices;
 }
 
 //--------------------------------------------------------------------------------------
-const VertexElementList& VertexBufferImpl::GetElements() const
+const VertexDeclaration& VertexBufferImpl::GetVertexDeclaration() const
 {
-  return elements;
+  return vertexDecl;
+}
+
+//--------------------------------------------------------------------------------------
+
+void VertexBufferImpl::Enable() const
+{
+  glBindBuffer(GL_ARRAY_BUFFER, buffer);
+  for (size_t i = 0; i < vertexDecl.Elements().size(); ++i)
+  {
+    const GLuint shaderAttrLocation = ((unsigned int)vertexDecl.Elements()[i].Usage * 16) + vertexDecl.Elements()[i].UsageIndex;
+
+    glVertexAttribFormat(
+      shaderAttrLocation,
+      elementTypeInfo[(int)Type].numComponents,
+      elementTypeInfo[(int)Type].glType,
+      GL_FALSE, // never let GL normalise the values - always make the user do it explicitly
+      Offset);
+  }
+}
+
+//--------------------------------------------------------------------------------------
+
+void VertexBufferImpl::Disable() const
+{
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
 }

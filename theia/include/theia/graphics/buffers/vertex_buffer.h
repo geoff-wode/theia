@@ -5,7 +5,7 @@
 
 #include <vector>
 #include <stddef.h>
-#include <theia/graphics/buffers/vertex_element.h>
+#include <theia/graphics/buffers/vertex_declaration.h>
 
 namespace theia
 {
@@ -23,11 +23,9 @@ namespace theia
       ///
       /// @note The data is assumed to be tightly packed into memory.
       ///
-      /// @param[in] elements     An array of @see VertexElement which collectively define the vertex
-      ///                         memory layout.
-      /// @param[in] numElements  The number of elements in the array.
+      /// @param[in] vertexDecl   Declares the vertex format that this buffer represents.
       /// @param[in] numVertices  The maximum number of vertices the buffer will contain.
-      static VertexBuffer* Create(const VertexElementList& elements, size_t numVertices);
+      static VertexBuffer* Create(const VertexDeclaration& vertexDecl, size_t numVertices);
 
       virtual ~VertexBuffer() = 0;
 
@@ -57,11 +55,12 @@ namespace theia
       /// @param[in] start    The starting index within the buffer from which copying should begin.
       virtual void GetData(void* const data, size_t count, size_t start) = 0;
 
-      virtual size_t GetVertexStride() const = 0;
-
       virtual size_t GetVertexCount() const = 0;
 
-      virtual const VertexElementList& GetElements() const = 0;
+      virtual const VertexDeclaration& GetVertexDeclaration() const = 0;
+
+      virtual void Enable() const = 0;
+      virtual void Disable() const = 0;
 
     protected:
       VertexBuffer();

@@ -2,38 +2,87 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/half_float.hpp>
 #include <theia/graphics/buffers/vertex_element.h>
+#include "../gl_loader.h"
 
 using namespace theia;
 using namespace theia::graphics;
 
 //-----------------------------------------------------------------
 
-VertexElement::VertexElement(VertexElementType::Enum type, VertexElementUsage::Enum usage, unsigned int index, size_t offset)
-  : type(type), usage(usage), index(index), offset(offset)
+// A structure containing various interesting implementation details about vertex elements.
+struct ElementUsageInfo
 {
+  const char* name;
+  VertexElementType::Enum type;
+};
+
+struct ElementTypeInfo
+{
+  const char* name;
+  size_t  numComponents;
+  size_t  sizeInBytes;
+  GLenum  glType;
+};
+
+//-----------------------------------------------------------------
+
+static ElementUsageInfo  elementUsageInfo[] =
+{
+  { "Position", VertexElementType::Vector3 },
+  { "Normal",   VertexElementType::Vector3 },
+  { "Colour",   VertexElementType::Vector4 },
+  { "TexCoord", VertexElementType::Vector2 }
+};
+
+static ElementTypeInfo elementTypeInfo[] =
+{
+  { "Float",        1, sizeof(float),       GL_FLOAT },
+  { "Vector2",      2, sizeof(glm::vec2),   GL_FLOAT },
+  { "Vector3",      3, sizeof(glm::vec3),   GL_FLOAT },
+  { "Vector4",      4, sizeof(glm::vec4),   GL_FLOAT },
+  { "HalfVector2",  2, sizeof(glm::hvec4),  GL_FLOAT },
+  { "HalfVector4",  4, sizeof(glm::hvec4),  GL_FLOAT },
+  { "Colour",       4, sizeof(glm::vec4),   GL_FLOAT }
+};
+
+//-----------------------------------------------------------------
+
+VertexElement::VertexElement(VertexElementType::Enum type,
+                             VertexElementUsage::Enum usage, unsigned int usageIndex,
+                             size_t offset, unsigned int stream)
+  : Type(type),
+    Size(elementTypeInfo[(int)Type].sizeInBytes),
+    Usage(usage), UsageIndex(usageIndex),
+    Offset(offset),
+    Stream(stream)
+{
+  if (Offset > 2047)
+  {
+    throw std::range_error("vertex element offset too large");
+  }
+  if (stream > 15)
+  {
+    throw std::range_error("vertex element stream index too large");
+  }
 }
 
+//-----------------------------------------------------------------
 VertexElement::VertexElement(const VertexElement& other)
-  : type(other.type), usage(other.usage), index(other.index)
+  : Type(other.Type),
+    Size(other.Size),
+    Usage(other.Usage), UsageIndex(other.UsageIndex),
+    Offset(other.Offset),
+    Stream(other.Stream)
 {
 }
 
 //-----------------------------------------------------------------
-
-size_t VertexElementType::Size(VertexElementType::Enum type)
+const char* const theia::graphics::VertexElementUsage::ToString(VertexElementUsage::Enum usage)
 {
-  switch (type)
-  {
-  case Float      : return sizeof(float); break;
-  case Vector2    : return sizeof(glm::vec2); break;
-  case Vector3    : return sizeof(glm::vec3); break;
-  case Vector4    : return sizeof(glm::vec4); break;
-  case HalfVector2: return sizeof(glm::vec2); break;
-  case HalfVector3: return sizeof(glm::hvec3); break;
-  case HalfVector4: return sizeof(glm::hvec4); break;
-  case Colour     : return sizeof(glm::vec4); break;
-  default:
-    break;
-  }
-  return 0;
+  return elementUsageInfo[(int)usage].name;
+}
+
+const char* const theia::graphics::VertexElementType::ToString(VertexElementType::Enum type)
+{
+  return elementTypeInfo[(int)type].name;
 }
