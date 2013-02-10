@@ -260,14 +260,12 @@ int main(int argc, char* argv[])
   Shader::ShaderParamList& params = shader->GetParameters();
   ShaderParamPtr viewProjParam = params["ViewProjection"];
   ShaderParamPtr worldParam = params["World"];
-  //ShaderParamPtr radiusParam = params["Radius"];
 
   glm::mat4 view = glm::lookAt(glm::vec3(0,0,10), glm::vec3(0), glm::vec3(0,1,0));
   glm::mat4 projection = glm::perspective(45.0f, (float)device.Width/(float)device.Height, 0.1f, 100.0f);
   glm::mat4 world = glm::mat4(1);
 
   shader->Activate();
-  //glUniform1f(radiusParam->Location, 5.0f);
   glUniformMatrix4fv(viewProjParam->Location, 1, GL_FALSE, glm::value_ptr(projection * view));
   shader->Deactivate();
   

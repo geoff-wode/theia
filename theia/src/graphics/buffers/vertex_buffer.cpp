@@ -1,148 +1,119 @@
 
-#include <vector>
-#include "../gl_loader.h"
+
+#include "../gl/loader.h"
 #include <theia/graphics/buffers/vertex_buffer.h>
 
 using namespace theia;
 using namespace theia::graphics;
 
-//--------------------------------------------------------------------------------------
+//----------------------------------------------------------------------
 
-class VertexBufferImpl : public VertexBuffer
+class VertexBuffer::Impl
 {
 public:
-  VertexBufferImpl();
-  virtual ~VertexBufferImpl();
-  virtual void SetData(const void* const data, size_t count, size_t start);
-  virtual void GetData(void* const data, size_t count, size_t start);
-  virtual size_t GetVertexCount() const;
-  virtual const VertexDeclaration& GetVertexDeclaration() const;
-  virtual void Enable() const;
-  virtual void Disable() const;
+  Impl()
+    : buffer(0), sizeInBytes(0)
+  {
+  }
+  ~Impl()
+  {
+    glDeleteBuffers(1, &buffer);
+  }
 
-  GLuint buffer;
-  size_t numVertices;
-  VertexDeclaration vertexDecl;
+  GLuint  buffer;
+  size_t  sizeInBytes;
+  const VertexDeclaration*  decl;
 };
 
-//--------------------------------------------------------------------------------------
+//----------------------------------------------------------------------
 
-VertexBuffer* VertexBuffer::Create(const VertexDeclaration& vertexDecl, size_t numVertices)
+static size_t ElementComponents(VertexElementType::Enum type)
 {
-  VertexBufferImpl* vb = new VertexBufferImpl();
+  switch (type)
+  {
+  case VertexElementType::Float:   return 1;
+  case VertexElementType::Vector2: return 2;
+  case VertexElementType::Vector3: return 3;
+  case VertexElementType::Vector4: return 4;
+  }
+  return 0;
+}
 
-  vb->numVertices = numVertices;
-  vb->vertexDecl = vertexDecl;
+//----------------------------------------------------------------------
 
-  const size_t sizeInBytes = numVertices * vertexDecl.Stride();
+static GLenum ElementBaseType(VertexElementType::Enum type)
+{
+  switch (type)
+  {
+  case VertexElementType::Float:   return GL_FLOAT;
+  case VertexElementType::Vector2: return GL_FLOAT;
+  case VertexElementType::Vector3: return GL_FLOAT;
+  case VertexElementType::Vector4: return GL_FLOAT;
+  }
+  return 0;
+}
 
-  glBindBuffer(GL_ARRAY_BUFFER, vb->buffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeInBytes, NULL, GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
+//----------------------------------------------------------------------
 
+VertexBufferPtr VertexBuffer::Create(size_t vertexCount, const VertexDeclaration& vertexDecl)
+{
+  VertexBufferPtr vb(new VertexBuffer(vertexCount, vertexDecl));
   return vb;
 }
 
-//--------------------------------------------------------------------------------------
+//----------------------------------------------------------------------
 
-VertexBuffer::VertexBuffer()
+VertexBuffer::VertexBuffer(size_t vertexCount, const VertexDeclaration& vertexDecl)
+  : impl(new VertexBuffer::Impl())
 {
+  impl->decl = &vertexDecl;
+  impl->sizeInBytes = vertexCount * vertexDecl.GetVertexStride();
+  
+  // Create the buffer object and allocate memory to it...
+  glGenBuffers(1, &impl->buffer);
+  glBindBuffer(GL_ARRAY_BUFFER, impl->buffer);
+  glBufferData(GL_ARRAY_BUFFER, impl->sizeInBytes, NULL, GL_STATIC_DRAW);
+
+  // Bind the vertex element definitions...
+  const VertexElement* const elements = impl->decl->GetElements();
+  for (size_t e = 0; e < impl->decl->GetNumElements(); ++e)
+  {
+    // The element usage and index combine to provide for multiple elements of the same usage.
+    // E.g. there can be multiple elements with TextureCoordinate usage, which have indices
+    // [0..16].
+    unsigned int usage = elements[e].Usage + (16 * elements[e].Index);
+    glEnableVertexAttribArray(usage);
+    glVertexAttribPointer(
+      usage,
+      ElementComponents(elements[e].Type),
+      ElementBaseType(elements[e].Type),
+      GL_FALSE,   // Values are never normalised by the GL.
+      impl->decl->GetVertexStride(),
+      (const void*)elements[e].Offset);
+  }
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-//--------------------------------------------------------------------------------------
+//----------------------------------------------------------------------
 
 VertexBuffer::~VertexBuffer()
 {
 }
 
-//--------------------------------------------------------------------------------------
+//----------------------------------------------------------------------
 
-VertexBufferImpl::VertexBufferImpl()
+void VertexBuffer::SetData(size_t vertexCount, size_t offset, const void* const data)
 {
-  glGenBuffers(1, &buffer);
-}
+  const size_t copyStart = offset * impl->decl->GetVertexStride();
+  const size_t copyLength = vertexCount * impl->decl->GetVertexStride();
 
-//--------------------------------------------------------------------------------------
-VertexBufferImpl::~VertexBufferImpl()
-{
-  glDeleteBuffers(1, &buffer);
-}
-
-//--------------------------------------------------------------------------------------
-void VertexBufferImpl::SetData(const void* const data, size_t count, size_t start)
-{
-  // Compute the byte offset into the buffer and the byte length of the intended copy...
-  const size_t copyLength = count * vertexDecl.Stride();
-  const size_t copyStart = start * vertexDecl.Stride();
-
-  // Make sure the copy does not extend beyond the end of the buffer...
-  const size_t bufferSize = vertexDecl.Stride() * numVertices;
-  if ((copyStart + copyLength) < bufferSize)
-  {
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferSubData(GL_ARRAY_BUFFER, copyStart, copyLength, data);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-  }
-  else
-  {
-    throw std::range_error("buffer overrun in VertexBuffer::SetData");
-  }
-}
-
-//--------------------------------------------------------------------------------------
-void VertexBufferImpl::GetData(void* const data, size_t count, size_t start)
-{
-  // Compute the byte offset into the buffer and the byte length of the intended copy...
-  const size_t copyLength = count * vertexDecl.Stride();
-  const size_t copyStart = start * vertexDecl.Stride();
-
-  // Make sure the copy does not extend beyond the end of the buffer...
-  const size_t bufferSize = vertexDecl.Stride() * numVertices;
-  if ((copyStart + copyLength) < bufferSize)
-  {
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glGetBufferSubData(GL_ARRAY_BUFFER, copyStart, copyLength, data);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-  }
-  else
-  {
-    throw std::range_error("buffer overrun in VertexBuffer::GetData");
-  }
-}
-
-//--------------------------------------------------------------------------------------
-size_t VertexBufferImpl::GetVertexCount() const
-{
-  return numVertices;
-}
-
-//--------------------------------------------------------------------------------------
-const VertexDeclaration& VertexBufferImpl::GetVertexDeclaration() const
-{
-  return vertexDecl;
-}
-
-//--------------------------------------------------------------------------------------
-
-void VertexBufferImpl::Enable() const
-{
-  glBindBuffer(GL_ARRAY_BUFFER, buffer);
-  for (size_t i = 0; i < vertexDecl.Elements().size(); ++i)
-  {
-    const GLuint shaderAttrLocation = ((unsigned int)vertexDecl.Elements()[i].Usage * 16) + vertexDecl.Elements()[i].UsageIndex;
-
-    glVertexAttribFormat(
-      shaderAttrLocation,
-      elementTypeInfo[(int)Type].numComponents,
-      elementTypeInfo[(int)Type].glType,
-      GL_FALSE, // never let GL normalise the values - always make the user do it explicitly
-      Offset);
-  }
-}
-
-//--------------------------------------------------------------------------------------
-
-void VertexBufferImpl::Disable() const
-{
+  glBindBuffer(GL_ARRAY_BUFFER, impl->buffer);
+  glBufferSubData(GL_ARRAY_BUFFER, copyLength, copyStart, data);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
+
+//----------------------------------------------------------------------
+
+void VertexBuffer::Enable() const { glBindBuffer(GL_ARRAY_BUFFER, impl->buffer); }
+void VertexBuffer::Disable() const { glBindBuffer(GL_ARRAY_BUFFER, 0); }

@@ -3,10 +3,16 @@
 #if ! defined(__THEIA_GFX_SHADER_PROGRAM__)
 #define __THEIA_GFX_SHADER_PROGRAM__
 
+#include <boost/scoped_ptr.hpp>
+#include <boost/shared_ptr.hpp>
+
 namespace theia
 {
   namespace graphics
   {
+    class ShaderProgram;
+    typedef boost::shared_ptr<ShaderProgram>  ShaderProgramPtr;
+
     class ShaderProgram
     {
     public:
@@ -18,7 +24,7 @@ namespace theia
       /// @param[in] fragmentSrc  Pointer to the nul-terminated source code of the fragment shader stage source code.
       ///
       /// @return A pointer to a newly created shader program on success or NULL otherwise.
-      static ShaderProgram* Create(const char* vertexSrc, const char* fragmentSrc);
+      static ShaderProgramPtr Create(const char* vertexSrc, const char* fragmentSrc);
 
       /// Create a shader program containing vertex, geometry and fragment stages.
       ///
@@ -27,7 +33,7 @@ namespace theia
       /// @param[in] fragmentSrc  Pointer to the nul-terminated source code of the fragment shader source code.
       ///
       /// @return A pointer to a newly created shader program on success or NULL otherwise.
-      static ShaderProgram* Create(const char* vertexSrc, const char* geometrySrc, const char* fragmentSrc);
+      static ShaderProgramPtr Create(const char* vertexSrc, const char* geometrySrc, const char* fragmentSrc);
 
     private:
       ShaderProgram();
@@ -35,7 +41,7 @@ namespace theia
       ShaderProgram& operator=(const ShaderProgram&);
 
       class Impl;
-      Impl* impl;
+      boost::scoped_ptr<Impl> impl;
     };
   }
 }

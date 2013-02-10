@@ -1,8 +1,7 @@
 
 
 #include <vector>
-#include <new>
-#include "../gl_loader.h"
+#include "../gl/loader.h"
 #include <theia/graphics/shaders/shader_program.h>
 #include <theia/misc/debug.h>
 
@@ -49,34 +48,29 @@ ShaderProgram::ShaderProgram()
 
 ShaderProgram::~ShaderProgram()
 {
-  delete impl;
 }
 
 //----------------------------------------------------------------------------------
 
-ShaderProgram* ShaderProgram::Create(const char* vertexSrc, const char* fragmentSrc)
+ShaderProgramPtr ShaderProgram::Create(const char* vertexSrc, const char* fragmentSrc)
 {
   return Create(vertexSrc, NULL, fragmentSrc);
 }
 
 //----------------------------------------------------------------------------------
 
-ShaderProgram* ShaderProgram::Create(const char* vertexSrc, const char* geometrySrc, const char* fragmentSrc)
+ShaderProgramPtr ShaderProgram::Create(const char* vertexSrc, const char* geometrySrc, const char* fragmentSrc)
 {
-  ShaderProgram* shader = new (std::nothrow) ShaderProgram();
+  ShaderProgramPtr shader(new (std::nothrow) ShaderProgram());
 
   std::vector<GLuint> shaderStages;
   shaderStages.push_back(shader->impl->CompileShaderObject(vertexSrc, GL_VERTEX_SHADER));
   if (NULL != geometrySrc) { shaderStages.push_back(shader->impl->CompileShaderObject(geometrySrc, GL_GEOMETRY_SHADER)); }
   shaderStages.push_back(shader->impl->CompileShaderObject(fragmentSrc, GL_FRAGMENT_SHADER));
 
-  if (shader->impl->LinkShaderProgram(shaderStages))
+  if (!shader->impl->LinkShaderProgram(shaderStages))
   {
-
-  }
-  else
-  {
-    delete shader;
+    shader.reset();
     shader = NULL;
   }
 

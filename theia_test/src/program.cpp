@@ -1,58 +1,52 @@
-
+#include <stdint.h>
+#include <boost/scoped_ptr.hpp>
+#include <glm/glm.hpp>
 #include <vector>
 #include <theia/program.h>
 #include <theia/application.h>
+#include <theia/graphics/vertex_position.h>
 #include <theia/graphics/buffers/vertex_buffer.h>
+#include <theia/graphics/buffers/index_buffer.h>
+#include <theia/graphics/device.h>
 
 using namespace theia;
 using namespace theia::graphics;
 
-
-#pragma pack(push, 1)
-struct Vertex
+static VertexPosition Vertices[] =
 {
-  Vertex(const glm::vec3& p, const glm::vec4& c)
-    : pos(p), colour(c)
-  {
-  }
-
-  glm::vec3 pos;
-  glm::vec4 colour;
-
-  static const std::vector<VertexElement>& GetElements();
+  VertexPosition(glm::vec3(-1, 1, 1)), // , glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)),    // 0
+  VertexPosition(glm::vec3(-1,-1, 1)), // , glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)),    // 1
+  VertexPosition(glm::vec3( 1,-1, 1)), // , glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)),    // 2
+  VertexPosition(glm::vec3( 1, 1, 1)), // , glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)),    // 3
+  VertexPosition(glm::vec3( 1, 1,-1)), // , glm::vec4(0.0f, 1.0f, 1.0f, 1.0f)),    // 4
+  VertexPosition(glm::vec3( 1,-1,-1)), // , glm::vec4(1.0f, 0.0f, 1.0f, 1.0f)),    // 5
+  VertexPosition(glm::vec3(-1,-1,-1)), // , glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)),    // 6
+  VertexPosition(glm::vec3(-1, 1,-1)) // , glm::vec4(0.5f, 0.5f, 0.5f, 1.0f))     // 7
 };
-#pragma pack(pop)
+static const size_t NumVertices = sizeof(Vertices)/sizeof(Vertices[0]);
 
-const std::vector<VertexElement>& Vertex::GetElements()
+static const uint16_t Indices[] =
 {
-  static const VertexElement elements[] =
-  {
-    VertexElement(VertexElementType::Vector3, offsetof(Vertex, pos)),
-    VertexElement(VertexElementType::Colour, offsetof(Vertex, colour))
-  };
-  static const size_t numElements = sizeof(elements)/sizeof(elements[0]);
-  static std::vector<VertexElement> list(elements, elements + numElements);
-
-  return list;
-}
-
-static const Vertex Vertices[] =
-{
-  Vertex(glm::vec3( 0,      0.75f, 0), glm::vec4(1, 0, 0, 1)),
-  Vertex(glm::vec3(-0.75f, -0.75f, 0), glm::vec4(0, 1, 0, 1)),
-  Vertex(glm::vec3( 0.75f, -0.75f, 0), glm::vec4(0, 0, 1, 1))
+  0, 1, 2,    2, 3, 0,    // Front
+  3, 2, 5,    5, 4, 3,    // Right
+  4, 5, 6,    6, 7, 4,    // Back
+  7, 6, 1,    1, 0, 7,    // Left
+  0, 3, 4,    4, 7, 0,    // Top
+  1, 6, 5,    5, 2, 1     // Bottom
 };
-const size_t NumVertices = sizeof(Vertices)/sizeof(Vertices[0]);
-
+static const size_t NumIndices = sizeof(Indices)/sizeof(Indices[0]);
 
 class MyApp : public theia::Application
 {
 public:
-  theia::graphics::ClearState clearState;
-  VertexBuffer* vb;
+  ClearContext    clearContext;
+  VertexBufferPtr vb;
+  IndexBufferPtr  ib;
 
   MyApp()
   {
+    Device.Width = 800;
+    Device.Height = 600;
   }
   
   virtual ~MyApp()
@@ -61,19 +55,18 @@ public:
 
   virtual void Initialise()
   {
-    Device.SetBackbufferWidth(800);
-    Device.SetBackbufferHeight(600);
+    clearContext.Colour = glm::vec4(1, 0, 0, 1);
 
-    clearState.colour = glm::vec4(0, 0, 1, 1);
-
-    vb = VertexBuffer::Create(Vertex::GetElements(), NumVertices);
+    vb = VertexBuffer::Create(NumVertices, VertexPosition::Declaration);
+    vb->SetData(NumVertices, 0, Vertices);
+    ib = IndexBuffer::Create(NumIndices, IndexBufferDataType::UInt16);
+    ib->SetData(NumIndices, 0, Indices);
 
     Application::Initialise();
   }
 
   virtual void Exiting()
   {
-    delete vb;
     Application::Exiting();
   }
 
@@ -84,21 +77,12 @@ public:
       Stop();
     }
 
-    if (Keyboard.IsKeyDown(SDLK_SPACE) && Keyboard.WasKeyUp(SDLK_SPACE))
-    {
-      clearState.colour = glm::vec4(1, 0, 0, 1);
-    }
-    else if (Keyboard.IsKeyUp(SDLK_SPACE) && Keyboard.WasKeyDown(SDLK_SPACE))
-    {
-      clearState.colour = glm::vec4(0, 0, 1, 1);
-    }
-
     Application::Update(elapsedMS);
   }
 
   virtual void Render(unsigned int elapsedMS)
   {
-    Device.Clear(clearState);
+    Device.Clear(clearContext);
     Application::Render(elapsedMS);
   }
 };
