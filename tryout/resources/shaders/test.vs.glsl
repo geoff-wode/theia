@@ -1,7 +1,7 @@
 #version 330
 
 #define VERTEX_POSITION	layout(location = 0)
-#define VERTEX_COLOUR		layout(location = 1)
+#define VERTEX_COLOUR		layout(location = 3)
 
 VERTEX_POSITION	in vec3 inPosition;
 VERTEX_COLOUR		in vec4 inColour;

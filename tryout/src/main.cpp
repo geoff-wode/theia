@@ -79,7 +79,7 @@ namespace VertexElementUsage
   enum Enum
   {
     Position,
-    Colour
+    Colour = 3
   };
 }
 
@@ -233,10 +233,6 @@ int main(int argc, char* argv[])
   Device device;
   device.Init();
 
-  // Create a vertex array object that knows about the vertex and index buffers...
-  GLuint vao;
-  glGenVertexArrays(1, &vao);
-  glBindVertexArray(vao);
   GLuint vb = CreateVertexBuffer(NumVertices, sizeof(VertexPosition), Vertices);
   glBindBuffer(GL_ARRAY_BUFFER, vb);
   for (size_t i = 0; i < VertexPosition::NumElements; ++i)
@@ -250,9 +246,9 @@ int main(int argc, char* argv[])
       VertexPosition::Stride,
       (const void*)VertexPosition::VertexDecl[i].Offset);
   }
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+
   GLuint ib = CreateIndexBuffer(sizeof(Indices), Indices);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
-  glBindVertexArray(0);
 
   ShaderPtr shader = CreateShader();
   
@@ -261,9 +257,9 @@ int main(int argc, char* argv[])
   ShaderParamPtr viewProjParam = params["ViewProjection"];
   ShaderParamPtr worldParam = params["World"];
 
-  glm::mat4 view = glm::lookAt(glm::vec3(0,0,10), glm::vec3(0), glm::vec3(0,1,0));
-  glm::mat4 projection = glm::perspective(45.0f, (float)device.Width/(float)device.Height, 0.1f, 100.0f);
-  glm::mat4 world = glm::mat4(1);
+  glm::mat4 view(glm::lookAt(glm::vec3(0,0,10), glm::vec3(0), glm::vec3(0,1,0)));
+  glm::mat4 projection(glm::perspective(45.0f, (float)device.Width/(float)device.Height, 0.1f, 100.0f));
+  glm::mat4 world(1);
 
   shader->Activate();
   glUniformMatrix4fv(viewProjParam->Location, 1, GL_FALSE, glm::value_ptr(projection * view));
@@ -280,20 +276,19 @@ int main(int argc, char* argv[])
 
     shader->Activate();
     glUniformMatrix4fv(worldParam->Location, 1, GL_FALSE, glm::value_ptr(world * rot));
-    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
 
     glDrawElements(GL_TRIANGLES, NumIndices, GL_UNSIGNED_SHORT, (const void*)0);
 
-    glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     shader->Deactivate();
 
     SDL_GL_SwapBuffers();
     SDL_Delay(2);
     EventHandler(stopProgram);
-
   }
 
-  glDeleteVertexArrays(1, &vao);
   glDeleteBuffers(1, &ib);
   glDeleteBuffers(1, &vb);
 
