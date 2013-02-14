@@ -1,3 +1,4 @@
+#include <new>
 #include <memory>
 #include <vector>
 #include <string.h>
@@ -8,7 +9,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 //--------------------------------------------------------------------------------
-struct ShaderParameter
+
+struct Shader::Parameter
 {
   GLuint location;  // as given by the "layout (location = n)" attribute declaration
   GLenum type;      // the type of the data stored in the attribute (gleaned from the shader program itself)
@@ -17,18 +19,28 @@ struct ShaderParameter
   GLchar name[32];  // the name of the parameter (gleaned from the shader program itself)
 };
 
+struct Shader::Impl
+{
+  Impl()
+    : program(0), numParams(0), params(NULL)
+  { }
+
+  ~Impl()
+  {
+    delete params;
+    glDeleteProgram(program);
+  }
+
+  // the GL handle to the shader program
+  GLuint program;
+
+  // array of the parameters
+  size_t numParams;
+  Shader::Parameter* params;
+};
+
 //--------------------------------------------------------------------------------
 
-const unsigned int MaxShaders = 1024;
-const unsigned int MaxShaderParameters = 4096;
-
-static unsigned int nextShader = 0;
-static unsigned int nextShaderParam = 0;
-
-static Shader shaderPool[MaxShaders] = { 0 };
-static ShaderParameter  shaderParamPool[MaxShaderParameters] = { 0 };
-
-//--------------------------------------------------------------------------------
 // These definitions are pre-pended to all shader source code to provide various
 // macros and functions.
 static const char* const shaderMacros =
@@ -118,61 +130,58 @@ static bool LinkShader(GLuint shader, GLuint parts[], size_t numParts)
 
 //--------------------------------------------------------------------------------
 
-static void EnumerateUniforms(Shader* shader)
+static void EnumerateUniforms(GLuint program, Shader::Parameter* params, size_t numParams)
 {
-  glGetProgramiv(shader->program, GL_ACTIVE_UNIFORMS, (GLint*)&shader->numParams);
+  // Get information about the active shader uniform values...
+  std::vector<GLuint> indices(numParams);
+  std::vector<GLint>  nameLengths(numParams);
+  std::vector<GLint>  blockIndices(numParams);
+  std::vector<GLint>  types(numParams);
+  for (size_t i = 0; i < numParams; ++i) { indices[i] = i; }
+  glGetActiveUniformsiv(program, numParams, indices.data(), GL_UNIFORM_BLOCK_INDEX, blockIndices.data());
+  glGetActiveUniformsiv(program, numParams, indices.data(), GL_UNIFORM_NAME_LENGTH, nameLengths.data());
+  glGetActiveUniformsiv(program, numParams, indices.data(), GL_UNIFORM_TYPE, types.data());
 
-  ASSERT(shader->numParams < Shader::MaxParameters, "shader struct needs at least %d params\n", shader->numParams);
-
-  if (shader->numParams > 0)
+  for (size_t i = 0; i < numParams; ++i)
   {
-    // Get information about the active shader uniform values...
-    std::vector<GLuint> indices(shader->numParams);
-    std::vector<GLint>  nameLengths(shader->numParams);
-    std::vector<GLint>  blockIndices(shader->numParams);
-    std::vector<GLint>  types(shader->numParams);
-    for (size_t i = 0; i < shader->numParams; ++i) { indices[i] = i; }
-    glGetActiveUniformsiv(shader->program, shader->numParams, indices.data(), GL_UNIFORM_BLOCK_INDEX, blockIndices.data());
-    glGetActiveUniformsiv(shader->program, shader->numParams, indices.data(), GL_UNIFORM_NAME_LENGTH, nameLengths.data());
-    glGetActiveUniformsiv(shader->program, shader->numParams, indices.data(), GL_UNIFORM_TYPE, types.data());
-
-    for (size_t i = 0; i < shader->numParams; ++i)
+    // Only handling non block-based variables for now...
+    if (-1 == blockIndices[i])
     {
-      // Only handling non block-based variables for now...
-      if (-1 == blockIndices[i])
-      {
-        shader->params[i] = nextShaderParam;
-        ShaderParameter* p = &shaderParamPool[nextShaderParam];
-        ++nextShaderParam;
-
-        glGetActiveUniformName(shader->program, i, sizeof(p->name) - 1, NULL, p->name);
-        p->location = glGetUniformLocation(shader->program, p->name);
-        p->type = types[i];
-      }
+      glGetActiveUniformName(program, i, sizeof(params[0].name) - 1, NULL, params[i].name);
+      params[i].location = glGetUniformLocation(program, params[i].name);
+      params[i].type = types[i];
     }
   }
 }
 
 //--------------------------------------------------------------------------------
 
-static Shader* AllocateNewShader()
+ShaderPtr Shader::Factory::New()
 {
-  Shader* shader = NULL;
-
-  ASSERT(nextShader < MaxShaders, "increase MaxShaders\n");
-  shader = &shaderPool[nextShader];
-  ++nextShader;
-
+  ShaderPtr shader( new Shader() );
   return shader;
 }
 
 //--------------------------------------------------------------------------------
 
-Shader* Shaders::Create(const char* const vertexShader, const char* fragmentShader)
+Shader::Shader()
+  : impl(new Impl())
 {
-  Shader* shader = AllocateNewShader();
+}
 
-  shader->program = glCreateProgram();
+//--------------------------------------------------------------------------------
+
+Shader::~Shader()
+{
+  delete impl;
+}
+
+//--------------------------------------------------------------------------------
+
+bool Shader::Compile(const char* const vertexShader, const char* fragmentShader)
+{
+  bool compiled = false;
+  impl->program = glCreateProgram();
 
   GLuint parts[2] =
   {
@@ -180,84 +189,87 @@ Shader* Shaders::Create(const char* const vertexShader, const char* fragmentShad
     CompileShader(GL_FRAGMENT_SHADER, fragmentShader)
   };
 
-  if (LinkShader(shader->program, parts, 2))
+  if (LinkShader(impl->program, parts, 2))
   {
-    EnumerateUniforms(shader);
+    compiled = true;
+
+    glGetProgramiv(impl->program, GL_ACTIVE_UNIFORMS, (GLint*)&impl->numParams);
+    if (impl->numParams > 0)
+    {
+      impl->params = new Shader::Parameter[impl->numParams];    
+      EnumerateUniforms(impl->program, impl->params, impl->numParams);
+    }
   }
 
   // Don't need the temporary shader parts...
   glDeleteShader(parts[0]);
   glDeleteShader(parts[1]);
 
-  return shader;
+  return compiled;
 }
 
 //--------------------------------------------------------------------------------
 
-void Shaders::DestroyAll()
+void Shader::Apply()
 {
-  for (unsigned short i = 0; i < nextShader; ++i)
+  glUseProgram(impl->program);
+
+  for (size_t i = 0; i < impl->numParams; ++i)
   {
-    glDeleteProgram(shaderPool[i].program);
-  }
-
-  memset(shaderPool, 0, sizeof(shaderPool));
-  memset(shaderParamPool, 0, sizeof(shaderParamPool));
-
-  nextShader = 0;
-  nextShaderParam = 0;
-}
-
-//--------------------------------------------------------------------------------
-
-void Shaders::Apply(Shader* const shader)
-{
-  glUseProgram(shader->program);
-  for (size_t i = 0; i < shader->numParams; ++i)
-  {
-    ShaderParameter* p = &shaderParamPool[shader->params[i]];
-    if (p->dirty)
+    if (impl->params[i].data)
     {
-      switch (p->type)
+      switch (impl->params[i].type)
       {
-      case GL_FLOAT:      glUniform1fv(p->location, 1, p->data); break;
-      case GL_FLOAT_VEC2: glUniform2fv(p->location, 1, p->data); break;
-      case GL_FLOAT_VEC3: glUniform3fv(p->location, 1, p->data); break;
-      case GL_FLOAT_VEC4: glUniform4fv(p->location, 1, p->data); break;
+      case GL_FLOAT:      glUniform1fv(impl->params[i].location, 1, impl->params[i].data); break;
+      case GL_FLOAT_VEC2: glUniform2fv(impl->params[i].location, 1, impl->params[i].data); break;
+      case GL_FLOAT_VEC3: glUniform3fv(impl->params[i].location, 1, impl->params[i].data); break;
+      case GL_FLOAT_VEC4: glUniform4fv(impl->params[i].location, 1, impl->params[i].data); break;
       default: ASSERT(false); break;
       }
-      p->dirty = false;
+      impl->params[i].dirty = false;
     }
   }
 }
 
 //--------------------------------------------------------------------------------
 
-Shaders::Parameter Shaders::GetParameter(const Shader* const shader, const char* const name)
+Shader::Parameter* const Shader::GetParameter(const char* const name)
 {
-  for (unsigned int i = 0; i < shader->numParams; ++i)
+  for (size_t i = 0; i < impl->numParams; ++i)
   {
-    unsigned short paramPoolIndex = shader->params[i];
-    if (0 == strcmp(shaderParamPool[paramPoolIndex].name, name))
+    if (0 == strcmp(impl->params[i].name, name))
     {
-      return paramPoolIndex;
+      return &impl->params[i];
     }
   }
 
   ASSERTM(false, "unknown parameter name '%s'\n", name);
 
-  return 0;
+  return NULL;
 }
 
 //--------------------------------------------------------------------------------
 
-void Shaders::SetParameter(Shader* const shader, Parameter param, const glm::vec2& value)
+static void CacheParameter(Shader::Parameter* param, const float* value, size_t size)
 {
-  ShaderParameter* p = &shaderParamPool[param];
-
-  if (0 != memcmp(p->data, glm::value_ptr(value), sizeof(value)))
+  if (0 != memcmp(param->data, value, size))
   {
-    memcpy(p->data, glm::value_ptr(value), sizeof(value));
-    p->dirty = true;
+    memcpy(param->data, value, size);
+    param->dirty = true;
   }
 }
+
+//--------------------------------------------------------------------------------
+
+void Shader::SetParameter(Shader::Parameter* param, float value)
+{
+  CacheParameter(param, &value, sizeof(value));
+}
+
+//--------------------------------------------------------------------------------
+
+void Shader::SetParameter(Shader::Parameter* param, const glm::vec2& value)
+{
+  CacheParameter(param, glm::value_ptr(value), sizeof(value));
+}
+

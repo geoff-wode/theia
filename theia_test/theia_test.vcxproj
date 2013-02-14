@@ -100,12 +100,18 @@
     <ClCompile Include="src\gl\gl_4_3.c" />
     <ClCompile Include="src\gl\wgl_wgl.c" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\shader\shader.cpp" />
+    <ClCompile Include="src\init.cpp" />
+    <ClCompile Include="src\mesh.cpp" />
+    <ClCompile Include="src\shader.cpp" />
+    <ClCompile Include="src\vertex_buffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\debug.h" />
+    <ClInclude Include="include\mesh.h" />
     <ClInclude Include="include\resource_manager.h" />
     <ClInclude Include="include\shader.h" />
+    <ClInclude Include="include\vertex_buffer.h" />
+    <ClInclude Include="include\vertex_decl.h" />
     <ClInclude Include="resources.h" />
     <ClInclude Include="include\gl\gl_4_3.h" />
     <ClInclude Include="include\gl_loader.h" />
