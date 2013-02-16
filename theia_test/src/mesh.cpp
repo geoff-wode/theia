@@ -2,11 +2,15 @@
 #include <mesh.h>
 #include <gl_loader.h>
 #include <vertex_buffer.h>
+#include <index_buffer.h>
 
 struct Mesh::Impl
 {
+  Impl() : shader(NULL), vertexBuffer(NULL), indexBuffer(NULL) { }
+
   ShaderPtr shader;
   VertexBufferPtr vertexBuffer;
+  IndexBufferPtr  indexBuffer;
 };
 
 //--------------------------------------------------------------------------------
@@ -32,8 +36,16 @@ void Mesh::Render() const
 {
   impl->shader->Apply();
   impl->vertexBuffer->Apply();
+  impl->indexBuffer->Apply();
 
-  glDrawArrays(GL_TRIANGLES, 0, 3 * impl->vertexBuffer->GetNumVertices());
+  if (impl->indexBuffer->GetDataType() == IndexBufferDataType::UnsignedInt)
+  {
+    glDrawElements(GL_TRIANGLES, impl->indexBuffer->GetNumIndices(), GL_UNSIGNED_INT, (const void*)0);
+  }
+  else
+  {
+    glDrawElements(GL_TRIANGLES, impl->indexBuffer->GetNumIndices(), GL_UNSIGNED_SHORT, (const void*)0);
+  }
 }
 
 //--------------------------------------------------------------------------------
@@ -46,4 +58,10 @@ void Mesh::SetVertexBuffer(VertexBufferPtr vertexBuffer)
 void Mesh::SetShader(ShaderPtr shader)
 {
   impl->shader = shader;
+}
+
+//--------------------------------------------------------------------------------
+void Mesh::SetIndexBuffer(IndexBufferPtr indexBuffer)
+{
+  impl->indexBuffer = indexBuffer;
 }

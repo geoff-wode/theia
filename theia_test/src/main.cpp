@@ -1,4 +1,5 @@
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <SDL.h>
 #include <vector>
 #include <stdint.h>
@@ -9,41 +10,11 @@
 #include <vertex_decl.h>
 #include <mesh.h>
 #include "../resources.h"
+#include "../models/Cube.h"
 
 //----------------------------------------------
 
 extern void InitSystem();
-
-//----------------------------------------------
-
-struct Vertex
-{
-  glm::vec3 pos;
-  glm::vec4 colour;
-};
-
-static const VertexElement elements[] =
-{
-  { GL_FLOAT, 3, offsetof(Vertex, pos) },
-  { GL_FLOAT, 4, offsetof(Vertex, colour) }
-};
-
-const VertexDeclaration VertexDecl =
-{
-  sizeof(Vertex),
-  sizeof(elements)/sizeof(elements[0]),
-  elements
-};
-
-//----------------------------------------------
-
-static Vertex vertices[] =
-{
-  { glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec4(1,0,0,1) },
-  { glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec4(0,1,0,1) },
-  { glm::vec3( 0.0f,  0.5f, 0.0f), glm::vec4(0,0,1,1) }
-};
-const size_t NumVertices = sizeof(vertices)/sizeof(vertices[0]);
 
 //----------------------------------------------
 
@@ -66,31 +37,44 @@ int main(int argc, char* argv[])
   InitSystem();
 
   VertexBufferPtr vb = VertexBuffer::Factory::New();
-  vb->Configure(&VertexDecl, NumVertices);
-  vb->SetData(NumVertices, 0, vertices);
+  vb->Configure(Cube::VertexDecl, Cube::NumVertices);
+  vb->SetData(Cube::NumVertices, 0, Cube::Vertices);
+
+  IndexBufferPtr ib = IndexBuffer::Factory::New();
+  ib->Configure(Cube::NumIndices, IndexBufferDataType::UnsignedShort);
+  ib->SetData(Cube::NumIndices, 0, Cube::Indices);
 
   ShaderPtr shader = Shader::Factory::New();
   shader->Compile(
     (const char* const)LoadResource(IDR_TEST_VS, TEXTFILE),
     (const char* const)LoadResource(IDR_TEST_FS, TEXTFILE));
 
+  Shader::Parameter* worldParam = shader->GetParameter("World");
+  Shader::Parameter* viewProjParam = shader->GetParameter("ViewProjection");
+
+  glm::mat4 view(glm::lookAt(glm::vec3(0,0,5), glm::vec3(0), glm::vec3(0,1,0)));
+  glm::mat4 projection(glm::perspective(45.0f, 800.0f/600.0f, 0.1f, 100.0f));
+  glm::mat4 scale = glm::scale(glm::mat4(1), glm::vec3(0.5f));
+
+  shader->SetParameter(viewProjParam, projection * view);
+
   MeshPtr mesh = Mesh::Factory::New();
   mesh->SetVertexBuffer(vb);
+  mesh->SetIndexBuffer(ib);
   mesh->SetShader(shader);
 
-  Shader::Parameter* durationParam = shader->GetParameter("duration");
-  Shader::Parameter* timeParam = shader->GetParameter("time");
-
-  shader->SetParameter(durationParam, 5.0f);
-
+  float angle = 0;
   bool quit = false;
   while (!quit)
   {
     glClear(GL_COLOR_BUFFER_BIT);
+    
+    glm::mat4 scale = glm::scale(glm::mat4(1), glm::vec3(1));
+    glm::mat4 rotation = glm::rotate(glm::mat4(1), angle, glm::vec3(0,1,0));
+    glm::mat4 world = scale * rotation;
+    shader->SetParameter(worldParam, world);
+    angle += 0.5f;
 
-    float time = (float)SDL_GetTicks() / 1000.0f;
-
-    shader->SetParameter(timeParam, time);
     mesh->Render();
 
     SDL_GL_SwapBuffers();

@@ -40,19 +40,17 @@ void VertexBuffer::Configure(const VertexDeclaration* const vertexDecl, size_t n
 
   glBindBuffer(GL_ARRAY_BUFFER, impl->buffer);
   glBufferData(GL_ARRAY_BUFFER, numVertices * vertexDecl->stride, NULL, GL_STATIC_DRAW);
-
-  for (size_t i = 0; i < vertexDecl->numElements; ++i)
+  for (size_t i = 0; i < impl->vertexDecl->numElements; ++i)
   {
     glEnableVertexAttribArray(i);
     glVertexAttribPointer(
       i,
-      vertexDecl->elements[i].components,
-      vertexDecl->elements[i].type,
+      impl->vertexDecl->elements[i].components,
+      impl->vertexDecl->elements[i].type,
       GL_FALSE,
-      vertexDecl->stride,
-      (const void*)vertexDecl->elements[i].offset);
+      impl->vertexDecl->stride,
+      (const void*)impl->vertexDecl->elements[i].offset);
   }
-
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 

@@ -6,6 +6,7 @@
 #include <gl_loader.h>
 #include <shader.h>
 #include <vertex_buffer.h>
+#include <index_buffer.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
 
@@ -24,6 +25,7 @@ public:
 
   void SetShader(ShaderPtr shader);
   void SetVertexBuffer(VertexBufferPtr vertexBuffer);
+  void SetIndexBuffer(IndexBufferPtr indexBuffer);
 
   void Render() const;
 

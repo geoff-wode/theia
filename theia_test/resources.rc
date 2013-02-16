@@ -4,5 +4,5 @@
 
 #include "resources.h"
 
-IDR_TEST_FS       TEXTFILE        ".\\shaders\\test.fs.glsl"
-IDR_TEST_VS       TEXTFILE        ".\\shaders\\test.vs.glsl"
+IDR_TEST_FS       TEXTFILE  ".\\shaders\\test.fs.glsl"
+IDR_TEST_VS       TEXTFILE  ".\\shaders\\test.vs.glsl"

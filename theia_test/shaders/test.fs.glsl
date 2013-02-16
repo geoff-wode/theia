@@ -1,9 +1,8 @@
 #version 330
 
-smooth in vec4 voutColour;
 out vec4 fragColour;
 
 void main()
 {
-	fragColour = voutColour;
+	fragColour = vec4(0,1,0,1);
 }

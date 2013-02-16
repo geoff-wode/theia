@@ -16,9 +16,9 @@ struct VertexElement
 // Declares the in-memory layout of a vertex buffer.
 struct VertexDeclaration
 {
-  const size_t  stride;                 // distance from start of one vertex to the next
-  const size_t  numElements;            // the number of elements comprising one vertex
-  const VertexElement* const elements;  // array of the elements
+  const size_t  stride;             // distance from start of one vertex to the next
+  const size_t  numElements;        // the number of elements comprising one vertex
+  const VertexElement elements[1];  // array of the elements
 };
 
 #endif // __VERTEX__

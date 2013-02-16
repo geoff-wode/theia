@@ -224,6 +224,7 @@ void Shader::Apply()
       case GL_FLOAT_VEC2: glUniform2fv(impl->params[i].location, 1, impl->params[i].data); break;
       case GL_FLOAT_VEC3: glUniform3fv(impl->params[i].location, 1, impl->params[i].data); break;
       case GL_FLOAT_VEC4: glUniform4fv(impl->params[i].location, 1, impl->params[i].data); break;
+      case GL_FLOAT_MAT4: glUniformMatrix4fv(impl->params[i].location, 1, GL_FALSE, impl->params[i].data); break;
       default: ASSERT(false); break;
       }
       impl->params[i].dirty = false;
@@ -273,3 +274,8 @@ void Shader::SetParameter(Shader::Parameter* param, const glm::vec2& value)
   CacheParameter(param, glm::value_ptr(value), sizeof(value));
 }
 
+//--------------------------------------------------------------------------------
+void Shader::SetParameter(Parameter* const param, const glm::mat4& value)
+{
+  CacheParameter(param, glm::value_ptr(value), sizeof(value));
+}

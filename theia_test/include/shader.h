@@ -34,6 +34,7 @@ public:
 
   void SetParameter(Parameter* const param, float value);
   void SetParameter(Parameter* const param, const glm::vec2& value);
+  void SetParameter(Parameter* const param, const glm::mat4& value);
 
 private:
   Shader();
@@ -41,20 +42,5 @@ private:
   struct Impl;
   Impl* impl;
 };
-
-//namespace Shaders
-//{
-//  typedef unsigned short Parameter;
-//
-//  ShaderPtr Create(const char* const vertexShader, const char* fragmentShader);
-//  void    DestroyAll();
-//
-//  void    Apply(ShaderPtr const shader);
-//
-//  Parameter GetParameter(const ShaderPtr const shader, const char* const name);
-//
-//  void SetParameter(ShaderPtr const shader, Parameter param, float value);
-//  void SetParameter(ShaderPtr const shader, Parameter param, const glm::vec2& value);
-//}
 
 #endif // __SHADER__
