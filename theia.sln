@@ -16,8 +16,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "resources", "resources\reso
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "obj_converter", "obj_converter\obj_converter.vcxproj", "{6112CB53-9AE5-4158-A83A-E19C98E56D03}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ply_loader", "ply_loader\ply_loader.vcxproj", "{3E9894C7-BABC-436F-9336-61E2B9C86EAB}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -44,10 +42,6 @@ Global
 		{6112CB53-9AE5-4158-A83A-E19C98E56D03}.Debug|Win32.Build.0 = Debug|Win32
 		{6112CB53-9AE5-4158-A83A-E19C98E56D03}.Release|Win32.ActiveCfg = Release|Win32
 		{6112CB53-9AE5-4158-A83A-E19C98E56D03}.Release|Win32.Build.0 = Release|Win32
-		{3E9894C7-BABC-436F-9336-61E2B9C86EAB}.Debug|Win32.ActiveCfg = Debug|Win32
-		{3E9894C7-BABC-436F-9336-61E2B9C86EAB}.Debug|Win32.Build.0 = Debug|Win32
-		{3E9894C7-BABC-436F-9336-61E2B9C86EAB}.Release|Win32.ActiveCfg = Release|Win32
-		{3E9894C7-BABC-436F-9336-61E2B9C86EAB}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

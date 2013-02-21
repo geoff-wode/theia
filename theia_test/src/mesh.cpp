@@ -65,3 +65,21 @@ void Mesh::SetIndexBuffer(IndexBufferPtr indexBuffer)
 {
   impl->indexBuffer = indexBuffer;
 }
+
+//--------------------------------------------------------------------------------
+ShaderPtr Mesh::GetShader() const
+{
+  return impl->shader;
+}
+
+//--------------------------------------------------------------------------------
+VertexBufferPtr Mesh::GetVertexBuffer() const
+{
+  return impl->vertexBuffer;
+}
+
+//--------------------------------------------------------------------------------
+IndexBufferPtr Mesh::GetIndexBuffer() const
+{
+  return impl->indexBuffer;
+}

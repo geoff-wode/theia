@@ -27,6 +27,10 @@ public:
   void SetVertexBuffer(VertexBufferPtr vertexBuffer);
   void SetIndexBuffer(IndexBufferPtr indexBuffer);
 
+  ShaderPtr GetShader() const;
+  VertexBufferPtr GetVertexBuffer() const;
+  IndexBufferPtr GetIndexBuffer() const;
+
   void Render() const;
 
 private:

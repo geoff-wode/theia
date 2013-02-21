@@ -34,6 +34,8 @@ public:
 
   void SetParameter(Parameter* const param, float value);
   void SetParameter(Parameter* const param, const glm::vec2& value);
+  void SetParameter(Parameter* const param, const glm::vec3& value);
+  void SetParameter(Parameter* const param, const glm::vec4& value);
   void SetParameter(Parameter* const param, const glm::mat4& value);
 
 private:

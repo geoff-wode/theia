@@ -216,7 +216,7 @@ void Shader::Apply()
 
   for (size_t i = 0; i < impl->numParams; ++i)
   {
-    if (impl->params[i].data)
+    if (impl->params[i].dirty)
     {
       switch (impl->params[i].type)
       {
@@ -266,10 +266,15 @@ void Shader::SetParameter(Shader::Parameter* param, float value)
 {
   CacheParameter(param, &value, sizeof(value));
 }
-
-//--------------------------------------------------------------------------------
-
 void Shader::SetParameter(Shader::Parameter* param, const glm::vec2& value)
+{
+  CacheParameter(param, glm::value_ptr(value), sizeof(value));
+}
+void Shader::SetParameter(Shader::Parameter* param, const glm::vec3& value)
+{
+  CacheParameter(param, glm::value_ptr(value), sizeof(value));
+}
+void Shader::SetParameter(Shader::Parameter* param, const glm::vec4& value)
 {
   CacheParameter(param, glm::value_ptr(value), sizeof(value));
 }
