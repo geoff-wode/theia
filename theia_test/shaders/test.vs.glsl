@@ -1,18 +1,20 @@
 #version 330
 
-layout (location = 0) in vec4 inPosition;
-layout (location = 1) in vec3 inNormal;
+layout (location = 0) in vec3 inPosition;
 
 uniform mat4	ViewProjection;
 uniform mat4	World;
+uniform float	Radius;
 
-out vec3 vertexPosition;
-out vec3 vertexNormal;
+out vec3 vertexWorldPos;
+out vec3 vertexObjectPos;
 
 void main()
 {
-	gl_Position = ViewProjection * World * inPosition;
+	vec3 P = normalize(inPosition);
+	vec4 worldPos = World * vec4(Radius * P, 1);
+	gl_Position = ViewProjection * worldPos;
 
-	vertexPosition = inPosition.xyz;
-	vertexNormal = inNormal;
+	vertexWorldPos = worldPos.xyz;
+	vertexObjectPos = inPosition.xyz;
 }

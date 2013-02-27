@@ -45,15 +45,13 @@ struct Shader::Impl
 // macros and functions.
 static const char* const shaderMacros =
   "#version 330\n"
-  // Pre-defined vertex attribute locations...
-  "#define VERTEX_POSITION	layout(location = 0)\n"
-  "#define VERTEX_NORMAL    layout(location = 1)\n"
-  "#define VERTEX_TEXCOORD  layout(location = 2)\n"
-  "#define VERTEX_COLOUR		layout(location = 3)\n"
-  // Math helpers...
   "#define PI 3.141592f\n"
   "#define TWO_PI (2.0f * PI)\n"
   "#define HALF_PI (0.5f * PI)\n"
+  "uniform vec3 EyePosition;\n"
+  "uniform vec3	LightPosition;\n"
+  "uniform vec3	LightColour;\n"
+  "uniform vec3	AmbientLightColour;\n"
   ;
 
 //--------------------------------------------------------------------------------
@@ -99,7 +97,8 @@ static GLuint CompileShader(GLenum type, const char* const src)
       case GL_FRAGMENT_SHADER: typeName = "fragment"; break;
       case GL_GEOMETRY_SHADER: typeName = "geometry"; break;
     }
-    LOG("%s shader compilation failed:\n%s\n", typeName, log.data());
+    LOG("%s\n", log.data());
+    exit(EXIT_FAILURE);
   }
   return shader;
 }
@@ -120,7 +119,8 @@ static bool LinkShader(GLuint shader, GLuint parts[], size_t numParts)
     glGetProgramiv(shader, GL_INFO_LOG_LENGTH, &logLength);
     std::vector<GLchar> log(logLength+1);
     glGetProgramInfoLog(shader, logLength, NULL, log.data());
-    LOG("shader shader link failed:\n%s\n", log.data());
+    LOG("%s\n", log.data());
+    exit(EXIT_FAILURE);
   }
   
   for (size_t i = 0; i < numParts; ++i) { glDetachShader(shader, parts[i]); }
@@ -244,7 +244,7 @@ Shader::Parameter* const Shader::GetParameter(const char* const name)
     }
   }
 
-  ASSERTM(false, "unknown parameter name '%s'\n", name);
+  LOG("unknown parameter name '%s'\n", name);
 
   return NULL;
 }

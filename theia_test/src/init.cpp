@@ -49,6 +49,7 @@ void InitSystem()
   {
     exit(EXIT_FAILURE);
   }
-  ogl_LoadFunctions();
   ConfigureSDL();
+  ogl_LoadFunctions();
+  ConfigureGL();
 }
