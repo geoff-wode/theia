@@ -4,9 +4,11 @@
 #include <vector>
 #include <stdint.h>
 #include <stddef.h>
-#include <shader.h>
-#include <debug.h>
-#include <gl_loader.h>
+#include <theia/graphics/shader.h>
+#include <theia/misc/debug.h>
+#include <theia/graphics/index_buffer.h>
+#include <theia/graphics/vertex_buffer.h>
+#include <theia/graphics/gl/gl_loader.h>
 #include "../resources.h"
 
 //----------------------------------------------
@@ -33,7 +35,7 @@ struct Mesh
 
 struct Material
 {
-  Material(ShaderPtr shader)
+  Material(theia::ShaderPtr shader)
     : Ke(0),
       Ka(0.1f),
       Kd(0.5f),
@@ -58,11 +60,11 @@ struct Material
   glm::vec3 Kd;
   glm::vec4 Ks;
 
-  ShaderPtr shader;
-  Shader::Parameter* emissiveParam;
-  Shader::Parameter* ambientParam;
-  Shader::Parameter* diffuseParam;
-  Shader::Parameter* specularParam;
+  theia::ShaderPtr shader;
+  theia::Shader::Parameter* const emissiveParam;
+  theia::Shader::Parameter* const ambientParam;
+  theia::Shader::Parameter* const diffuseParam;
+  theia::Shader::Parameter* const specularParam;
 };
 
 //----------------------------------------------
@@ -150,7 +152,7 @@ int main(int argc, char* argv[])
   LOG("----\n");
   InitSystem();
 
-  ShaderPtr shader = Shader::Factory::New();
+  theia::ShaderPtr shader(new theia::Shader());
   shader->Compile(
     (const char* const)LoadResource(IDR_TEST_VS, TEXTFILE),
     (const char* const)LoadResource(IDR_TEST_FS, TEXTFILE));
@@ -158,8 +160,8 @@ int main(int argc, char* argv[])
   Material material(shader);
   material.Apply();
 
-  Shader::Parameter* worldParam = shader->GetParameter("World");
-  Shader::Parameter* viewProjParam = shader->GetParameter("ViewProjection");
+  theia::Shader::Parameter* const worldParam = shader->GetParameter("World");
+  theia::Shader::Parameter* const viewProjParam = shader->GetParameter("ViewProjection");
 
   const struct Tangent
   {
@@ -178,22 +180,23 @@ int main(int argc, char* argv[])
 
   std::vector<Vertex> vertices(gridSize * gridSize);
 
-  GLuint vb[numFaces];
-  glGenBuffers(numFaces, vb);
+  std::vector<theia::VertexBufferPtr> faces(numFaces);
 
   for (int i = 0; i < numFaces; ++i)
   {
+    theia::VertexBufferPtr vb(new theia::VertexBuffer());
+    faces[i] = vb;
+
     BuildGrid(tangents[i].x, tangents[i].y, gridSize, vertices);
-    glBindBuffer(GL_ARRAY_BUFFER, vb[i]);
+    glBindBuffer(GL_ARRAY_BUFFER, vb->buffer);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
-  GLuint ib;
-  glGenBuffers(1, &ib);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
   std::vector<unsigned short> indices(gridSize * 2 * (gridSize-1));
   BuildIndices(gridSize, indices);
+  theia::IndexBufferPtr ib(new theia::IndexBuffer());
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->buffer);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned short), indices.data(), GL_STATIC_DRAW);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
@@ -202,10 +205,13 @@ int main(int argc, char* argv[])
   for (int i = 0; i < numFaces; ++i)
   {
     glBindVertexArray(vao[i]);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
-    glBindBuffer(GL_ARRAY_BUFFER, vb[i]);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, faces[i]->buffer);
     Vertex::Configure();
     glBindVertexArray(0);
+
+    // Do this >outside< of the VAO binding..!
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
@@ -251,7 +257,7 @@ int main(int argc, char* argv[])
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shader->SetParameter(worldParam, world);
-    shader->Apply();
+    shader->Activate();
 
     for (int i = 0; i < numFaces; ++i)
     {

@@ -41,7 +41,7 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)intermediate\$(ProjectName)\$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)theia\include;$(ProjectDir)include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)lib\$(Configuration);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -62,7 +62,8 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>msvcrt.lib</IgnoreSpecificDefaultLibraries>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);theia.lib</AdditionalDependencies>
+      <Profile>false</Profile>
     </Link>
     <PostBuildEvent>
       <Command>copy $(SDL_DIR)lib\x86\SDL.dll $(OutDir)</Command>
@@ -101,11 +102,9 @@
     <ClCompile Include="src\gl\wgl_wgl.c" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\init.cpp" />
-    <ClCompile Include="src\shader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\debug.h" />
-    <ClInclude Include="include\shader.h" />
     <ClInclude Include="resources.h" />
     <ClInclude Include="include\gl\gl_4_3.h" />
     <ClInclude Include="include\gl_loader.h" />

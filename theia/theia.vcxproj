@@ -11,43 +11,23 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\application.cpp" />
-    <ClCompile Include="src\graphics\buffers\index_buffer.cpp" />
-    <ClCompile Include="src\graphics\buffers\vertex_buffer.cpp" />
-    <ClCompile Include="src\graphics\clear_context.cpp" />
-    <ClCompile Include="src\graphics\device.cpp" />
     <ClCompile Include="src\graphics\gl\gl_4_3.c" />
     <ClCompile Include="src\graphics\gl\wgl_wgl.c" />
-    <ClCompile Include="src\graphics\mesh.cpp" />
+    <ClCompile Include="src\graphics\index_buffer.cpp" />
     <ClCompile Include="src\graphics\shaders\shader.cpp" />
-    <ClCompile Include="src\graphics\shaders\shader_param.cpp" />
-    <ClCompile Include="src\graphics\vertex_declaration.cpp" />
-    <ClCompile Include="src\graphics\vertex_element.cpp" />
-    <ClCompile Include="src\graphics\vertex_definitions.cpp" />
+    <ClCompile Include="src\graphics\vertex_buffer.cpp" />
     <ClCompile Include="src\input\keyboard.cpp" />
-    <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\resource_loader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\theia\application.h" />
-    <ClInclude Include="include\theia\graphics\mesh.h" />
-    <ClInclude Include="include\theia\graphics\render_context.h" />
-    <ClInclude Include="include\theia\graphics\shaders\shader_param.h" />
-    <ClInclude Include="include\theia\graphics\vertex_position_colour.h" />
-    <ClInclude Include="include\theia\resource_loader.h" />
-    <ClInclude Include="include\theia\graphics\buffers\index_buffer.h" />
-    <ClInclude Include="include\theia\graphics\buffers\vertex_buffer.h" />
-    <ClInclude Include="include\theia\graphics\clear_context.h" />
-    <ClInclude Include="include\theia\graphics\device.h" />
-    <ClInclude Include="include\theia\graphics\shaders\shader.h" />
-    <ClInclude Include="include\theia\graphics\vertex_declaration.h" />
-    <ClInclude Include="include\theia\graphics\vertex_element.h" />
-    <ClInclude Include="include\theia\graphics\vertex_position.h" />
+    <ClInclude Include="include\theia\graphics\gl\gl_4_3.h" />
+    <ClInclude Include="include\theia\graphics\gl\gl_loader.h" />
+    <ClInclude Include="include\theia\graphics\gl\wgl_wgl.h" />
+    <ClInclude Include="include\theia\graphics\index_buffer.h" />
+    <ClInclude Include="include\theia\graphics\vertex_buffer.h" />
+    <ClInclude Include="include\theia\graphics\shader.h" />
     <ClInclude Include="include\theia\input\keyboard.h" />
     <ClInclude Include="include\theia\misc\debug.h" />
-    <ClInclude Include="include\theia\program.h" />
     <ClInclude Include="src\graphics\gl\gl_4_3.h" />
-    <ClInclude Include="src\graphics\gl\loader.h" />
     <ClInclude Include="src\graphics\gl\wgl_wgl.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

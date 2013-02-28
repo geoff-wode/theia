@@ -4,7 +4,7 @@
 #if ! defined(GL_LOADER)
 #define GL_LOADER
 
-#include "gl_4_3.h"
-#include "wgl_wgl.h"
+#include <theia/graphics/gl/gl_4_3.h>
+#include <theia/graphics/gl/wgl_wgl.h>
 
 #endif // GL_LOADER
