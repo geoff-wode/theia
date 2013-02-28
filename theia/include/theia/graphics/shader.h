@@ -3,6 +3,7 @@
 #if ! defined(__THEIA_GFX_SHADER__)
 #define __THEIA_GFX_SHADER__
 
+#include <stdint.h>
 #include <glm/glm.hpp>
 #include <vector>
 #include <boost/shared_ptr.hpp>
@@ -34,6 +35,7 @@ namespace theia
     ///
     /// @return true if compilation succeeded, otherwise false.
     bool Compile(const char* vertexSrc, const char* fragmentSrc);
+    bool Compile(uint32_t vertexShaderResource, uint32_t fragmentShaderResource);
 
     /// Make this shader active and copy all modified parameter values to the GPU.
     void Activate();

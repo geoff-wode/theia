@@ -26,6 +26,6 @@ IndexBuffer::~IndexBuffer()
 void IndexBuffer::SetData(size_t sizeInBytes, size_t offsetInBytes, const void* const data)
 {
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer);
-  glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, sizeInBytes, offsetInBytes, data);
+  glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offsetInBytes, sizeInBytes, data);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }

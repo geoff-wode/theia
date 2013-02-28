@@ -4,8 +4,9 @@
 #include <vector>
 #include <stdint.h>
 #include <stddef.h>
-#include <theia/graphics/shader.h>
 #include <theia/misc/debug.h>
+#include <theia/graphics/shader.h>
+#include <theia/graphics/material.h>
 #include <theia/graphics/index_buffer.h>
 #include <theia/graphics/vertex_buffer.h>
 #include <theia/graphics/gl/gl_loader.h>
@@ -24,47 +25,6 @@ struct Vertex
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, position));
   }
-};
-
-struct Mesh
-{
-  GLuint vao;
-  GLuint vb;
-  size_t primitiveCount;
-};
-
-struct Material
-{
-  Material(theia::ShaderPtr shader)
-    : Ke(0),
-      Ka(0.1f),
-      Kd(0.5f),
-      Ks(0.6f,0.6f,0.6f,8),
-      shader(shader),
-      emissiveParam(shader->GetParameter("Ke")),
-      ambientParam(shader->GetParameter("Ka")),
-      diffuseParam(shader->GetParameter("Kd")),
-      specularParam(shader->GetParameter("Ks"))
-  { }
-
-  void Apply() const
-  {
-    if (emissiveParam) { shader->SetParameter(emissiveParam, Ke); }
-    if (ambientParam) { shader->SetParameter(ambientParam, Ka); }
-    if (diffuseParam) { shader->SetParameter(diffuseParam, Kd); }
-    if (specularParam) { shader->SetParameter(specularParam, Ks); }
-  }
-
-  glm::vec3 Ke;
-  glm::vec3 Ka;
-  glm::vec3 Kd;
-  glm::vec4 Ks;
-
-  theia::ShaderPtr shader;
-  theia::Shader::Parameter* const emissiveParam;
-  theia::Shader::Parameter* const ambientParam;
-  theia::Shader::Parameter* const diffuseParam;
-  theia::Shader::Parameter* const specularParam;
 };
 
 //----------------------------------------------
@@ -133,32 +93,16 @@ static void BuildIndices(int gridSize, std::vector<unsigned short>& indices)
 
 //----------------------------------------------
 
-static const void* LoadResource(uint32_t id, uint32_t type)
-{
-  HMODULE module = GetModuleHandle(NULL);
-  HRSRC rc = FindResource(module, MAKEINTRESOURCE(id), MAKEINTRESOURCE(type));
-  HGLOBAL handle = LoadResource(module, rc);
-  //if (NULL != size)
-  //{
-  //  *size = SizeofResource(module, rc);
-  //}
-  return (const void*)LockResource(handle);
-}
-
-//----------------------------------------------
-
 int main(int argc, char* argv[])
 {
   LOG("----\n");
   InitSystem();
 
   theia::ShaderPtr shader(new theia::Shader());
-  shader->Compile(
-    (const char* const)LoadResource(IDR_TEST_VS, TEXTFILE),
-    (const char* const)LoadResource(IDR_TEST_FS, TEXTFILE));
+  shader->Compile(IDR_TEST_VS, IDR_TEST_FS);
 
-  Material material(shader);
-  material.Apply();
+  theia::MaterialState material(shader);
+  theia::Material::Apply(material);
 
   theia::Shader::Parameter* const worldParam = shader->GetParameter("World");
   theia::Shader::Parameter* const viewProjParam = shader->GetParameter("ViewProjection");
@@ -184,21 +128,15 @@ int main(int argc, char* argv[])
 
   for (int i = 0; i < numFaces; ++i)
   {
-    theia::VertexBufferPtr vb(new theia::VertexBuffer());
-    faces[i] = vb;
-
     BuildGrid(tangents[i].x, tangents[i].y, gridSize, vertices);
-    glBindBuffer(GL_ARRAY_BUFFER, vb->buffer);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    faces[i] = theia::VertexBuffer::Create(vertices.size() * sizeof(Vertex));
+    faces[i]->SetData(vertices.size() * sizeof(Vertex), 0, vertices.data());
   }
 
   std::vector<unsigned short> indices(gridSize * 2 * (gridSize-1));
   BuildIndices(gridSize, indices);
-  theia::IndexBufferPtr ib(new theia::IndexBuffer());
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->buffer);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned short), indices.data(), GL_STATIC_DRAW);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+  theia::IndexBufferPtr ib = theia::IndexBuffer::Create(indices.size() * sizeof(unsigned short));
+  ib->SetData(indices.size() * sizeof(unsigned short), 0, indices.data());
 
   GLuint vao[numFaces];
   glGenVertexArrays(numFaces, vao);

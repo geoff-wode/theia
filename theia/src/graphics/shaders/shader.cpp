@@ -4,6 +4,7 @@
 #include <theia/graphics/gl/gl_loader.h>
 #include <theia/graphics/shader.h>
 #include <theia/misc/debug.h>
+#include <theia/resource_loader.h>
 
 using namespace theia;
 
@@ -67,6 +68,21 @@ bool Shader::Compile(const char* vertexSrc, const char* fragmentSrc)
   glDeleteShader(parts[1]);
 
   return compiled;
+}
+
+bool Shader::Compile(uint32_t vertexShaderResource, uint32_t fragmentShaderResource)
+{
+  Resource vertexShader;
+  Resource fragmentShader;
+
+  ResourceLoader::Load(vertexShaderResource, 256, vertexShader);
+  ResourceLoader::Load(fragmentShaderResource, 256, fragmentShader);
+
+  if (vertexShader.data && fragmentShader.data)
+  {
+    return Compile((const char*)vertexShader.data, (const char*)fragmentShader.data);
+  }
+  return false;
 }
 
 void Shader::Activate()

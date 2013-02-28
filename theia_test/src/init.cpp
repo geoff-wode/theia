@@ -1,5 +1,5 @@
 #include <SDL.h>
-#include <gl_loader.h>
+#include <theia/graphics/gl/gl_loader.h>
 
 //----------------------------------------------
 

@@ -98,17 +98,11 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\gl\gl_4_3.c" />
-    <ClCompile Include="src\gl\wgl_wgl.c" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\init.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\debug.h" />
     <ClInclude Include="resources.h" />
-    <ClInclude Include="include\gl\gl_4_3.h" />
-    <ClInclude Include="include\gl_loader.h" />
-    <ClInclude Include="include\gl\wgl_wgl.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources.rc" />
