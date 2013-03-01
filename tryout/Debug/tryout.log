@@ -1,0 +1,53 @@
+﻿Build started 14/02/2013 15:00:45.
+     1>Project "C:\coding\GIT\theia\tryout\tryout.vcxproj" on node 2 (rebuild target(s)).
+     1>_PrepareForClean:
+         Deleting file "Debug\tryout.lastbuildstate".
+       InitializeBuildStatus:
+         Creating "Debug\tryout.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D _CRT_SECURE_NO_WARNINGS /D WIN32 /D _DEBUG /D _WINDOWS /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TC /analyze- /errorReport:prompt src\gl\gl_4_3.c src\gl\wgl_wgl.c
+         wgl_wgl.c
+         gl_4_3.c
+         Generating Code...
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D _CRT_SECURE_NO_WARNINGS /D WIN32 /D _DEBUG /D _WINDOWS /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt src\main.cpp src\obj_loader.cpp src\shader.cpp
+         shader.cpp
+         obj_loader.cpp
+         main.cpp
+         Generating Code...
+       ResourceCompile:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /D _UNICODE /D UNICODE /l"0x0809" /nologo /fo"Debug\test.res" resources\test.rc 
+       ManifestResourceCompile:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo"Debug\tryout.exe.embed.manifest.res" Debug\tryout_manifest.rc 
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\coding\GIT\theia\Debug\tryout.exe" /INCREMENTAL /NOLOGO SDLmain.lib SDL.lib glimg.lib openGL32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /NODEFAULTLIB:msvcrt.lib /MANIFEST /ManifestFile:"Debug\tryout.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\coding\GIT\theia\Debug\tryout.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\coding\GIT\theia\Debug\tryout.lib" /MACHINE:X86 Debug\test.res
+         Debug\tryout.exe.embed.manifest.res
+         Debug\gl_4_3.obj
+         Debug\wgl_wgl.obj
+         Debug\main.obj
+         Debug\obj_loader.obj
+         Debug\shader.obj
+       Manifest:
+         Deleting file "Debug\tryout.exe.embed.manifest".
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /out:"Debug\tryout.exe.embed.manifest" /manifest Debug\tryout.exe.intermediate.manifest
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo"Debug\tryout.exe.embed.manifest.res" Debug\tryout_manifest.rc 
+       LinkEmbedManifest:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\coding\GIT\theia\Debug\tryout.exe" /INCREMENTAL /NOLOGO SDLmain.lib SDL.lib glimg.lib openGL32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /NODEFAULTLIB:msvcrt.lib /MANIFEST /ManifestFile:"Debug\tryout.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\coding\GIT\theia\Debug\tryout.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\coding\GIT\theia\Debug\tryout.lib" /MACHINE:X86 Debug\test.res
+         Debug\tryout.exe.embed.manifest.res
+         Debug\gl_4_3.obj
+         Debug\wgl_wgl.obj
+         Debug\main.obj
+         Debug\obj_loader.obj
+         Debug\shader.obj
+         tryout.vcxproj -> C:\coding\GIT\theia\Debug\tryout.exe
+       PostBuildEvent:
+         copy C:\coding\opengl\SDL-1.2.15\lib\x86\SDL.dll C:\coding\GIT\theia\Debug\
+         :VCEnd
+                 1 file(s) copied.
+       FinalizeBuildStatus:
+         Deleting file "Debug\tryout.unsuccessfulbuild".
+         Touching "Debug\tryout.lastbuildstate".
+     1>Done Building Project "C:\coding\GIT\theia\tryout\tryout.vcxproj" (rebuild target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:07.56
