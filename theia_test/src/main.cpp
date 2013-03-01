@@ -152,8 +152,6 @@ int main(int argc, char* argv[])
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
-
-  //glClearColor(1, 0, 0, 1);
   
   // set the radius of the sphere...
   const float radius = 1500;
@@ -173,7 +171,7 @@ int main(int argc, char* argv[])
   shader->SetParameter(shader->GetParameter("LightPosition"), glm::vec3(radius * 5));
   shader->SetParameter(shader->GetParameter("LightColour"), glm::vec3(1));
   shader->SetParameter(shader->GetParameter("GridLineWidth"), glm::vec2(1));
-  shader->SetParameter(shader->GetParameter("GridResolution"), glm::vec2(1.0f / 10.0f));
+  shader->SetParameter(shader->GetParameter("GridResolution"), glm::vec2(1.0f / 10.0f, 1.0f / 15.0f));
   shader->SetParameter(shader->GetParameter("Radius"), radius);
   shader->SetParameter(viewProjParam, projection * view);
 
@@ -189,8 +187,13 @@ int main(int argc, char* argv[])
     previousTime = now;
     angle -= 60 * deltaMS;
 
-    glm::mat4 rotation = glm::rotate(MatrixIdentity, angle, glm::normalize(glm::vec3(1,1,0)));
-    glm::mat4 world = rotation;
+    const glm::mat4 tilt(
+      glm::rotate(MatrixIdentity, 20.0f, glm::vec3(0,0,1)) *
+      glm::rotate(MatrixIdentity, 30.0f, glm::vec3(1,0,0))
+      );
+
+    glm::mat4 rotation(glm::rotate(MatrixIdentity, angle, glm::vec3(0,1,0)));
+    glm::mat4 world = tilt * rotation;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
