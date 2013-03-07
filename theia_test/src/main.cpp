@@ -95,13 +95,25 @@ static void BuildIndices(int gridSize, std::vector<unsigned short>& indices)
 
 //----------------------------------------------
 
+struct Light
+{
+  float     active;
+  glm::vec4 position;
+  glm::vec3 colour;
+
+  Light(float active, const glm::vec4& position, const glm::vec3& colour)
+    : active(active), position(position), colour(colour)
+  {
+  }
+};
+
 int main(int argc, char* argv[])
 {
   LOG("----\n");
   InitSystem();
 
   theia::ShaderPtr shader(new theia::Shader());
-  shader->Compile(IDR_TEST_VS, IDR_TEST_FS);
+  shader->Compile(IDR_SHADER_COMMON, IDR_TEST_VS, IDR_TEST_FS);
 
   theia::MaterialState material(shader);
   theia::Material::Apply(material);
@@ -155,7 +167,7 @@ int main(int argc, char* argv[])
   // set the radius of the sphere...
   const float radius = 6300;
 
-  const glm::vec3 lightPos(0);
+  Light sun(1, glm::vec4(0,0,0,1), glm::vec3(1));
 
   // place the sphere...
   const glm::vec3 target(500000,0,500000);
@@ -170,9 +182,11 @@ int main(int argc, char* argv[])
 
   glm::mat4 projection(glm::perspective(45.0f, 800.0f/600.0f, nearPlane, farPlane));
   
-  shader->SetParameter(shader->GetParameter("AmbientLightColour"), glm::vec3(0));
-  shader->SetParameter(shader->GetParameter("LightPos"), glm::vec3(lightPos));
-  shader->SetParameter(shader->GetParameter("LightColour"), glm::vec3(1));
+  shader->SetParameter(shader->GetParameter("Lights[0].active"), sun.active);
+  shader->SetParameter(shader->GetParameter("Lights[0].position"), sun.position);
+  shader->SetParameter(shader->GetParameter("Lights[0].colour"), sun.colour);
+
+  shader->SetParameter(shader->GetParameter("AmbientLight"), glm::vec3(0.2f));
   shader->SetParameter(shader->GetParameter("GridLineWidth"), glm::vec2(1));
   shader->SetParameter(shader->GetParameter("GridResolution"), glm::vec2(1.0f / 10.0f));
   shader->SetParameter(shader->GetParameter("Radius"), radius);
@@ -199,8 +213,8 @@ int main(int argc, char* argv[])
     glm::mat4 mv(view * model);
     glm::mat4 mvp(projection * mv);
 
-    shader->SetParameter(shader->GetParameter("Model"), model);
-    shader->SetParameter(shader->GetParameter("MVP"), mvp);
+    shader->SetParameter(shader->GetParameter("World"), model);
+    shader->SetParameter(shader->GetParameter("WorldViewProjection"), mvp);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

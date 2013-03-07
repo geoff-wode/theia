@@ -1,18 +1,6 @@
 #version 330
 
-// Surface material values...
-struct MaterialStruct
-{
-	vec3	Ke;		// emissive colour
-	vec3	Ka;		// ambient reflectance
-	vec3	Kd;		// diffuse colour
-	vec4	Ks;		// specular colour in rgb, shininess in a
-};
-
-uniform vec3	LightPos;
-uniform vec3	EyePos;
-uniform vec3	LightColour;
-uniform vec3	AmbientLightColour;
+uniform Light	Lights[1];
 uniform MaterialStruct Material;
 
 // Variables controlling a lat/lon grid.
@@ -28,22 +16,9 @@ in vec3 vertexSurfacePos;	// vertex object space coordinate
 
 out vec4 fragColour;
 
-#define ONE_OVER_PI		1.0f / PI
-#define ONE_OVER_2_PI	1.0f / TWO_PI
-const vec2 aHalf = vec2(0.5f);
-
 const vec3 day = vec3(0.7);
 const vec3 night = vec3(0,0,1);
 const float blendTransition = 0.15;
-
-// Compute and return a texture coordinate based on the surface normal
-// of an ellipsoid.
-vec2 ComputeTextureCoord(vec3 normal)
-{
-	float u = (atan(normal.z, normal.x) * ONE_OVER_2_PI);
-	float v = (asin(normal.y) * ONE_OVER_PI);
-	return vec2(u,v) + aHalf;
-}
 
 // Determine wether the surface texture coordinate coincides with where a lat/lon line
 // should be drawn.
@@ -57,40 +32,27 @@ bool OnLatLonLine(vec2 textureCoord)
 }
 
 // Lighting calculation.
-vec3 Light(vec3 P, vec3 N, vec3 Eye, MaterialStruct material)
+vec3 ComputeLight(vec3 P, vec3 N, vec3 Eye, MaterialStruct material, Light light)
 {
 	vec3 emissive = Material.Ke;
-	vec3 ambient = Material.Ka * AmbientLightColour;
+	vec3 ambient = Material.Ka * AmbientLight;
+	vec3 diffuse = vec3(0);
 
-	vec3 L = normalize(LightPos - P);
-	float NdotL = dot(N,L);
-	float diffuseAmount = max(NdotL, 0);
-
-	vec3 colour;
-	
-	if (NdotL > blendTransition)
+	if (light.active)
 	{
-		//vec3 diffuse = material.Kd * LightColour * diffuseAmount;
-		//colour = emissive + ambient + diffuse;
-		colour = day;
+		vec3 L = mix(light.position.xyz, normalize(light.position.xyz - P), light.position.w);
+		float NdotL = dot(N,L);
+		float diffuseAmount = max(NdotL, 0);
+		diffuse = material.Kd * light.colour * diffuseAmount;
 	}
-	else if (NdotL < -blendTransition)
-	{
-		colour = night;
-	}
-	else
-	{
-		colour = mix(night, day, (NdotL + blendTransition) * 4);
-	}
-
-	return colour;
+	return emissive + ambient + diffuse;
 }
 
 void main()
 {
 	// compute the 2D texture coordinate at this surface point...
 	vec3 objectNormal = normalize(vertexSurfacePos);
-	vec2 textureCoord = ComputeTextureCoord(objectNormal);
+	vec2 textureCoord = EllipsoidTextureCoord(objectNormal);
 
 	// check to see if this fragment is on a lat/lon line and don't bother
 	// with the expensive lighting calculation if it is...
@@ -101,7 +63,7 @@ void main()
 	else
 	{
 		vec3 N = normalize(vertexNormal);
-		fragColour.rgb = Light(vertexWorldPos, N, EyePos, Material);
+		fragColour.rgb = ComputeLight(vertexWorldPos, N, EyePosition, Material, Lights[0]);
 		fragColour.a = 1.0f;
 	}
 }

@@ -34,8 +34,8 @@ namespace theia
     /// @param[in] fragmentSrc  Pointer to the nul-terminated source code of the fragment shader stage source code.
     ///
     /// @return true if compilation succeeded, otherwise false.
-    bool Compile(const char* vertexSrc, const char* fragmentSrc);
-    bool Compile(uint32_t vertexShaderResource, uint32_t fragmentShaderResource);
+    bool Compile(const char* commonSrc, const char* vertexSrc, const char* fragmentSrc);
+    bool Compile(uint32_t commonResource, uint32_t vertexShaderResource, uint32_t fragmentShaderResource);
 
     /// Make this shader active and copy all modified parameter values to the GPU.
     void Activate();

@@ -10,18 +10,7 @@ using namespace theia;
 
 //--------------------------------------------------------------------------------
 
-// These definitions are pre-pended to all shader source code to provide various
-// macros and functions.
-static const char* const shaderMacros =
-  "#version 330\n"
-  "#define PI 3.141592f\n"
-  "#define TWO_PI (2.0f * PI)\n"
-  "#define HALF_PI (0.5f * PI)\n"
-  ;
-
-//--------------------------------------------------------------------------------
-
-static GLuint CompileShader(GLenum type, const char* const src);
+static GLuint CompileShader(GLenum type, const char* commonSrc, const char* const src);
 static bool LinkShader(GLuint shader, GLuint parts[], size_t numParts);
 static void EnumerateUniforms(GLuint program, std::vector<Shader::Parameter>& params);
 
@@ -37,14 +26,14 @@ Shader::~Shader()
   glDeleteProgram(program);
 }
 
-bool Shader::Compile(const char* vertexSrc, const char* fragmentSrc)
+bool Shader::Compile(const char* commonSrc, const char* vertexSrc, const char* fragmentSrc)
 {
   bool compiled = false;
 
   GLuint parts[2] =
   {
-    CompileShader(GL_VERTEX_SHADER, vertexSrc),
-    CompileShader(GL_FRAGMENT_SHADER, fragmentSrc)
+    CompileShader(GL_VERTEX_SHADER, commonSrc, vertexSrc),
+    CompileShader(GL_FRAGMENT_SHADER, commonSrc, fragmentSrc)
   };
 
   if (LinkShader(program, parts, 2))
@@ -66,17 +55,19 @@ bool Shader::Compile(const char* vertexSrc, const char* fragmentSrc)
   return compiled;
 }
 
-bool Shader::Compile(uint32_t vertexShaderResource, uint32_t fragmentShaderResource)
+bool Shader::Compile(uint32_t commonResource, uint32_t vertexShaderResource, uint32_t fragmentShaderResource)
 {
+  Resource shaderCommon;
   Resource vertexShader;
   Resource fragmentShader;
 
+  ResourceLoader::Load(commonResource, 256, shaderCommon);
   ResourceLoader::Load(vertexShaderResource, 256, vertexShader);
   ResourceLoader::Load(fragmentShaderResource, 256, fragmentShader);
 
-  if (vertexShader.data && fragmentShader.data)
+  if (shaderCommon.data && vertexShader.data && fragmentShader.data)
   {
-    return Compile((const char*)vertexShader.data, (const char*)fragmentShader.data);
+    return Compile((const char*)shaderCommon.data, (const char*)vertexShader.data, (const char*)fragmentShader.data);
   }
   return false;
 }
@@ -159,22 +150,17 @@ void Shader::SetParameter(Parameter* const param, const glm::mat4& value)
 
 //--------------------------------------------------------------------------------
 
-static GLuint CompileShader(GLenum type, const char* const src)
+static GLuint CompileShader(GLenum type, const char* common, const char* const src)
 {
-  // Create the compilation unit by combining the built-in symbols with the given source
-  // code. The #version line in the original source is skipped to ensure that our's is
-  // the first non-comment line in the compilation.
   const char* compilationUnits[2];
-  compilationUnits[0] = shaderMacros;
+  compilationUnits[0] = common;
 
   // Skip the #version line in the user's source code (not an error if it isn't there)...
   const char* pos = strstr(src, "#version");
   if (NULL != pos)
   {
-    // Go to the end of the line...
-    pos = strchr(pos, '\n');
     // Set the compilation unit to start from the end of the #version line...
-    compilationUnits[1] = pos;
+    compilationUnits[1] = strchr(pos, '\n');
   }
   else
   {
