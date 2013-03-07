@@ -17,10 +17,6 @@ static const char* const shaderMacros =
   "#define PI 3.141592f\n"
   "#define TWO_PI (2.0f * PI)\n"
   "#define HALF_PI (0.5f * PI)\n"
-  "uniform vec3 EyePosition;\n"
-  "uniform vec3	LightPosition;\n"
-  "uniform vec3	LightColour;\n"
-  "uniform vec3	AmbientLightColour;\n"
   ;
 
 //--------------------------------------------------------------------------------
@@ -99,6 +95,7 @@ void Shader::Activate()
       case GL_FLOAT_VEC2: glUniform2fv(params[i].location, 1, params[i].data); break;
       case GL_FLOAT_VEC3: glUniform3fv(params[i].location, 1, params[i].data); break;
       case GL_FLOAT_VEC4: glUniform4fv(params[i].location, 1, params[i].data); break;
+      case GL_FLOAT_MAT3: glUniformMatrix3fv(params[i].location, 1, GL_FALSE, params[i].data); break;
       case GL_FLOAT_MAT4: glUniformMatrix4fv(params[i].location, 1, GL_FALSE, params[i].data); break;
       default: ASSERT(false); break;
       }
@@ -126,7 +123,7 @@ Shader::Parameter* const Shader::GetParameter(const char* const name)
 
 static void CacheParameter(Shader::Parameter* const param, const float* value, size_t size)
 {
-  if (0 != memcmp(param->data, value, size))
+  if (param && (0 != memcmp(param->data, value, size)))
   {
     memcpy(param->data, value, size);
     param->dirty = true;
@@ -148,6 +145,10 @@ void Shader::SetParameter(Parameter* const param, const glm::vec3& value)
   CacheParameter(param, glm::value_ptr(value), sizeof(value));
 }
 void Shader::SetParameter(Parameter* const param, const glm::vec4& value)
+{
+  CacheParameter(param, glm::value_ptr(value), sizeof(value));
+}
+void Shader::SetParameter(Parameter* const param, const glm::mat3& value)
 {
   CacheParameter(param, glm::value_ptr(value), sizeof(value));
 }

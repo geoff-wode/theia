@@ -1,5 +1,7 @@
+#define GLM_SWIZZLE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
 #include <SDL.h>
 #include <vector>
 #include <stdint.h>
@@ -104,9 +106,6 @@ int main(int argc, char* argv[])
   theia::MaterialState material(shader);
   theia::Material::Apply(material);
 
-  theia::Shader::Parameter* const worldParam = shader->GetParameter("World");
-  theia::Shader::Parameter* const viewProjParam = shader->GetParameter("ViewProjection");
-
   const struct Tangent
   {
     glm::vec3 x;
@@ -153,29 +152,30 @@ int main(int argc, char* argv[])
     glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
-  //glClearColor(1, 0, 0, 1);
-  
   // set the radius of the sphere...
-  const float radius = 1500;
-  // place the sphere at the world origin...
-  const glm::vec3 target(0);
+  const float radius = 6300;
+
+  const glm::vec3 lightPos(0);
+
+  // place the sphere...
+  const glm::vec3 target(500000,0,500000);
+
   // set the eye position to some multiple of the radius (so we can see the damn thing)...
-  const glm::vec3 eyePos(0,0,radius * 5);
+  const glm::vec3 eyePos = target + (glm::vec3(0,0.5f,-1) * radius * 3.0f);
+
   // try to minimise the distance between the near and far bounding planes:
   // near must be closer than the sphere while far bounding plane must be at least (near + sphere_location)...
   const float nearPlane = radius * 1.1f;
   const float farPlane = glm::distance(eyePos, target) + nearPlane;
 
-  glm::mat4 view(glm::lookAt(eyePos, target, Up));
   glm::mat4 projection(glm::perspective(45.0f, 800.0f/600.0f, nearPlane, farPlane));
-
-  shader->SetParameter(shader->GetParameter("AmbientLightColour"), glm::vec3(1));
-  shader->SetParameter(shader->GetParameter("LightPosition"), glm::vec3(radius * 5));
+  
+  shader->SetParameter(shader->GetParameter("AmbientLightColour"), glm::vec3(0));
+  shader->SetParameter(shader->GetParameter("LightPos"), glm::vec3(lightPos));
   shader->SetParameter(shader->GetParameter("LightColour"), glm::vec3(1));
   shader->SetParameter(shader->GetParameter("GridLineWidth"), glm::vec2(1));
   shader->SetParameter(shader->GetParameter("GridResolution"), glm::vec2(1.0f / 10.0f));
   shader->SetParameter(shader->GetParameter("Radius"), radius);
-  shader->SetParameter(viewProjParam, projection * view);
 
   const float frameRate = 1000.0f / 60.0f;
   float previousTime = 0.0f;
@@ -187,14 +187,23 @@ int main(int argc, char* argv[])
     float deltaMS = (now - previousTime) / 1000.0f;
     if (deltaMS > frameRate) { deltaMS = frameRate; }
     previousTime = now;
-    angle -= 60 * deltaMS;
+    angle += 6 * deltaMS;
 
-    glm::mat4 rotation = glm::rotate(MatrixIdentity, angle, glm::normalize(glm::vec3(1,1,0)));
-    glm::mat4 world = rotation;
+    glm::mat4 view(glm::lookAt(eyePos, target, Up));
+
+    const glm::mat4 translation(glm::translate(MatrixIdentity, target));
+    const glm::mat4 tilt(glm::rotate(MatrixIdentity, 20.0f, glm::vec3(0,0,1)));
+    glm::mat4 rotation(glm::rotate(MatrixIdentity, angle, Up));
+    glm::mat4 model(translation * tilt * rotation);
+
+    glm::mat4 mv(view * model);
+    glm::mat4 mvp(projection * mv);
+
+    shader->SetParameter(shader->GetParameter("Model"), model);
+    shader->SetParameter(shader->GetParameter("MVP"), mvp);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    shader->SetParameter(worldParam, world);
     shader->Activate();
 
     for (int i = 0; i < numFaces; ++i)

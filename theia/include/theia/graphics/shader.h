@@ -46,6 +46,7 @@ namespace theia
     void SetParameter(Parameter* const param, const glm::vec2& value);
     void SetParameter(Parameter* const param, const glm::vec3& value);
     void SetParameter(Parameter* const param, const glm::vec4& value);
+    void SetParameter(Parameter* const param, const glm::mat3& value);
     void SetParameter(Parameter* const param, const glm::mat4& value);
 
 
