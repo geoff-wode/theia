@@ -60,14 +60,17 @@ bool Shader::Compile(uint32_t commonResource, uint32_t vertexShaderResource, uin
   Resource shaderCommon;
   Resource vertexShader;
   Resource fragmentShader;
-
   ResourceLoader::Load(commonResource, 256, shaderCommon);
   ResourceLoader::Load(vertexShaderResource, 256, vertexShader);
   ResourceLoader::Load(fragmentShaderResource, 256, fragmentShader);
 
   if (shaderCommon.data && vertexShader.data && fragmentShader.data)
   {
-    return Compile((const char*)shaderCommon.data, (const char*)vertexShader.data, (const char*)fragmentShader.data);
+    std::string common((char*)shaderCommon.data, (char*)shaderCommon.data + shaderCommon.sizeInBytes);
+    std::string vs((char*)vertexShader.data, (char*)vertexShader.data + vertexShader.sizeInBytes);
+    std::string fs((char*)fragmentShader.data, (char*)fragmentShader.data + fragmentShader.sizeInBytes);
+
+    return Compile(common.c_str(), vs.c_str(), fs.c_str());
   }
   return false;
 }
@@ -155,18 +158,8 @@ static GLuint CompileShader(GLenum type, const char* common, const char* const s
   const char* compilationUnits[2];
   compilationUnits[0] = common;
 
-  // Skip the #version line in the user's source code (not an error if it isn't there)...
-  const char* pos = strstr(src, "#version");
-  if (NULL != pos)
-  {
-    // Set the compilation unit to start from the end of the #version line...
-    compilationUnits[1] = strchr(pos, '\n');
-  }
-  else
-  {
-    // They didn't provide a #version line - just suck in the whole text...
-    compilationUnits[1] = src;
-  }
+  // They didn't provide a #version line - just suck in the whole text...
+  compilationUnits[1] = src;
 
   GLuint shader = glCreateShader(type);
   glShaderSource(shader, 2, compilationUnits, NULL);

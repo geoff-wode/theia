@@ -1,10 +1,8 @@
-#version 330
 
-uniform Light	Lights[1];
 uniform MaterialStruct Material;
 
 // Variables controlling a lat/lon grid.
-// The x components defines the value for longitude, y components define latitude values.
+// The x components define the values for longitude, y components define latitude values.
 // For resolution, the actual number of lines is given as 1/resolution in [0,1], i.e. for
 // 20 lines, set resolution = 0.05.
 uniform vec2 GridLineWidth;
@@ -15,10 +13,6 @@ in vec3 vertexWorldPos;		// vertex world space position
 in vec3 vertexSurfacePos;	// vertex object space coordinate
 
 out vec4 fragColour;
-
-const vec3 day = vec3(0.7);
-const vec3 night = vec3(0,0,1);
-const float blendTransition = 0.15;
 
 // Determine wether the surface texture coordinate coincides with where a lat/lon line
 // should be drawn.
@@ -32,20 +26,18 @@ bool OnLatLonLine(vec2 textureCoord)
 }
 
 // Lighting calculation.
-vec3 ComputeLight(vec3 P, vec3 N, vec3 Eye, MaterialStruct material, Light light)
+vec3 ComputeLight(vec3 P, vec3 N, vec3 Eye, MaterialStruct material)
 {
-	vec3 emissive = Material.Ke;
-	vec3 ambient = Material.Ka * AmbientLight;
-	vec3 diffuse = vec3(0);
+	vec3 emittedLight = Material.Ke;
+	vec3 ambientLight = Material.Ka * AmbientLight;
 
-	if (light.active)
-	{
-		vec3 L = mix(light.position.xyz, normalize(light.position.xyz - P), light.position.w);
-		float NdotL = dot(N,L);
-		float diffuseAmount = max(NdotL, 0);
-		diffuse = material.Kd * light.colour * diffuseAmount;
-	}
-	return emissive + ambient + diffuse;
+	// Assume that the sun is always the origin of the world coordinate space...
+	vec3 L = normalize(-vertexWorldPos);
+	float NdotL = dot(L,N);
+	float diffuseAmount = max(NdotL, 0);
+	vec3 diffuseLight = material.Kd * diffuseAmount; // sunlight colour is assumed to be == 1.0
+
+	return emittedLight + ambientLight + diffuseLight;
 }
 
 void main()
@@ -63,7 +55,7 @@ void main()
 	else
 	{
 		vec3 N = normalize(vertexNormal);
-		fragColour.rgb = ComputeLight(vertexWorldPos, N, EyePosition, Material, Lights[0]);
+		fragColour.rgb = ComputeLight(vertexWorldPos, N, EyePosition, Material);
 		fragColour.a = 1.0f;
 	}
 }

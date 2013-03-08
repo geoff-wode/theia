@@ -23,14 +23,6 @@ struct MaterialStruct
 	vec4	Ks;		// specular colour in rgb, shininess in a
 };
 
-// Defines the parameters associated with a light source...
-struct Light
-{
-	float	active;		// whether this light is active (1) or not (0)
-	vec4	position;	// position.w == 0 indicates a direction rather than location
-	vec3	colour;		// the intrinsic colour of the light
-};
-
 // Standard shader parameters:
 uniform mat4	World;		// transforms the model into world space
 uniform mat4	View;		// transforms a vector into view space

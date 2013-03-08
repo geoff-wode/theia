@@ -1,21 +1,18 @@
-#version 330
 
 layout (location = 0) in vec3 inPosition;
-
-uniform float	Radius;
 
 out vec3 vertexWorldPos;
 out vec3 vertexSurfacePos;
 out vec3 vertexNormal;
+out vec3 vertexToLight;
 
 void main()
 {
-	vec3 N = normalize(inPosition);
-	vec4 P = vec4(N * Radius, 1);
-
+	vec4 P = vec4(inPosition, 1);
 	gl_Position = WorldViewProjection * P;
 
+	vec3 N = normalize(inPosition);
 	vertexNormal = mat3(World) * N;
-	vertexWorldPos = World * P;
-	vertexSurfacePos = P.xyz;
+	vertexWorldPos = World * vec4(inPosition,1);
+	vertexSurfacePos = inPosition;
 }
