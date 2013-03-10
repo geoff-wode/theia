@@ -15,7 +15,11 @@
 #include "../resources.h"
 
 //----------------------------------------------
-const int gridSize = 128;
+const int screenWidth = 1280;
+const int screenHeight = 720;
+const float halfFOV = 45.0f;
+const float aspectRatio = (float)screenWidth / (float)screenHeight;
+const int gridSize = 256;
 //----------------------------------------------
 
 struct Vertex
@@ -71,7 +75,7 @@ const int numFaces = sizeof(tangents)/sizeof(tangents[0]);
 
 //----------------------------------------------
 
-extern void InitSystem();
+extern void InitSystem(int screenWidth, int screenHeight);
 
 //----------------------------------------------
 
@@ -127,7 +131,7 @@ static void BuildIndices(int gridSize, std::vector<unsigned short>& indices)
 int main(int argc, char* argv[])
 {
   LOG("----\n");
-  InitSystem();
+  InitSystem(1280,720);
 
   theia::ShaderPtr shader(new theia::Shader());
   shader->Compile(IDR_SHADER_COMMON, IDR_TEST_VS, IDR_TEST_FS);
@@ -173,7 +177,7 @@ int main(int argc, char* argv[])
     glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
-  glm::mat4 projection(glm::perspective(45.0f, 800.0f/600.0f, NearPlane, FarPlane));
+  glm::mat4 projection(glm::perspective(halfFOV, aspectRatio, NearPlane, FarPlane));
   
   shader->SetParameter(shader->GetParameter("AmbientLight"), glm::vec3(0.2f));
   shader->SetParameter(shader->GetParameter("GridLineWidth"), glm::vec2(1));
@@ -196,10 +200,10 @@ int main(int argc, char* argv[])
     glm::mat4 rotation(glm::rotate(MatrixIdentity, angle, Up));
     glm::mat4 model(translation * tilt * rotation);
 
+    // Combine the view and model transform matrices and translate the result to make objects
+    // relative to the eye before making the final screen-space perspective transform...
     glm::mat4 view(glm::lookAt(EyePos, Target, Up));
-
-    glm::mat4 mv(view * model);
-
+    glm::mat4 mv(glm::translate(view * model, -EyePos));
     glm::mat4 mvp(projection * mv);
 
     shader->SetParameter(shader->GetParameter("EyePosition"), EyePos);

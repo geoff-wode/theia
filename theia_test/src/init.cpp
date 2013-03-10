@@ -41,13 +41,13 @@ static void ConfigureGL()
 
 //----------------------------------------------
 
-void InitSystem()
+void InitSystem(int screenWidth, int screenHeight)
 {
   SDL_Init(SDL_INIT_EVERYTHING);
   atexit(SDL_Quit);
 
   ConfigureSDL();
-  if (NULL == SDL_SetVideoMode(800, 600, 32, SDL_OPENGL | SDL_HWSURFACE))
+  if (NULL == SDL_SetVideoMode(screenWidth, screenHeight, 32, SDL_OPENGL | SDL_HWSURFACE))
   {
     exit(EXIT_FAILURE);
   }

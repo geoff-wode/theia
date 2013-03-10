@@ -8,7 +8,7 @@ out vec3 vertexToLight;
 
 void main()
 {
-	vec4 P = vec4(inPosition, 1);
+	vec4 P = vec4(inPosition + EyePosition, 1);
 	gl_Position = WorldViewProjection * P;
 
 	vec3 N = normalize(inPosition);
