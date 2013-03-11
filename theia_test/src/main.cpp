@@ -14,6 +14,10 @@
 #include <theia/graphics/gl/gl_loader.h>
 #include "../resources.h"
 
+// Fucking steam-powered Windows segmented memory cruft..!
+#undef near
+#undef far
+
 //----------------------------------------------
 const int screenWidth = 1280;
 const int screenHeight = 720;
@@ -36,7 +40,6 @@ struct Vertex
 //----------------------------------------------
 
 static const glm::mat4 MatrixIdentity(1);
-
 static const glm::vec3 Forward(0,0,-1);
 static const glm::vec3 Backward(0,0,1);
 static const glm::vec3 Up(0,1,0);
@@ -47,16 +50,16 @@ static const glm::vec3 Left(-1,0,0);
 // set the Radius of the sphere...
 const float Radius = 6300;
 
-// place the sphere...
-const glm::vec3 Target(500000,0,500000);
-
-// set the eye position to some multiple of the Radius (so we can see the damn thing)...
-const glm::vec3 EyePos = Target + (glm::vec3(0,0.0f,-1) * Radius * 3.0f);
-
-// try to minimise the distance between the near and far bounding planes:
-// near must be closer than the sphere while far bounding plane must be at least (near + sphere_location)...
-const float NearPlane = Radius * 1.1f;
-const float FarPlane = glm::distance(EyePos, Target) + NearPlane;
+struct CameraState
+{
+  float near;
+  float far;
+  glm::vec3 position;
+  glm::vec3 target;
+  glm::vec3 up;
+  glm::mat4 perspective;
+  glm::mat4 view;
+};
 
 const struct Tangent
 {
@@ -71,7 +74,6 @@ const struct Tangent
   { glm::vec3(1,0,0),glm::vec3(0,0,-1) },
   { glm::vec3(1,0,0),glm::vec3(0,0,1) }
 };
-const int numFaces = sizeof(tangents)/sizeof(tangents[0]);
 
 //----------------------------------------------
 
@@ -133,6 +135,20 @@ int main(int argc, char* argv[])
   LOG("----\n");
   InitSystem(1280,720);
 
+  const glm::vec3 PlanetPosition(500000,0,500000);
+
+  CameraState camera;
+  camera.up = Up;
+  camera.target = Forward;
+  // set the eye position to some multiple of the Radius (so we can see the damn thing)...
+  camera.position = PlanetPosition + (glm::vec3(0,0,-1) * Radius * 3.0f);
+  // try to minimise the distance between the near and far bounding planes:
+  // near must be closer than the sphere while far bounding plane must be at least (near + sphere_location)...
+  camera.near = Radius * 1.1f;
+  camera.far = glm::distance(camera.position, PlanetPosition) + camera.near;
+  camera.perspective = glm::perspective(halfFOV, aspectRatio, camera.near, camera.far);
+
+
   theia::ShaderPtr shader(new theia::Shader());
   shader->Compile(IDR_SHADER_COMMON, IDR_TEST_VS, IDR_TEST_FS);
 
@@ -176,8 +192,6 @@ int main(int argc, char* argv[])
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
-
-  glm::mat4 projection(glm::perspective(halfFOV, aspectRatio, NearPlane, FarPlane));
   
   shader->SetParameter(shader->GetParameter("AmbientLight"), glm::vec3(0.2f));
   shader->SetParameter(shader->GetParameter("GridLineWidth"), glm::vec2(1));
@@ -195,18 +209,25 @@ int main(int argc, char* argv[])
     previousTime = now;
     angle += 20 * deltaMS;
 
-    const glm::mat4 translation(glm::translate(MatrixIdentity, Target));
-    const glm::mat4 tilt(glm::rotate(MatrixIdentity, 20.0f, glm::vec3(0,0,1)));
+    // Constant translation and axial tilt...
+    const glm::mat4 planet(   glm::translate(MatrixIdentity, PlanetPosition)
+                            * glm::rotate(MatrixIdentity, 20.0f, glm::vec3(0,0,1))
+                          );
+    // Rotation animation...
     glm::mat4 rotation(glm::rotate(MatrixIdentity, angle, Up));
-    glm::mat4 model(translation * tilt * rotation);
+    // Final transform...
+    glm::mat4 model(planet * rotation);
 
     // Combine the view and model transform matrices and translate the result to make objects
     // relative to the eye before making the final screen-space perspective transform...
-    glm::mat4 view(glm::lookAt(EyePos, Target, Up));
-    glm::mat4 mv(glm::translate(view * model, -EyePos));
-    glm::mat4 mvp(projection * mv);
+    camera.view = glm::lookAt(camera.position, PlanetPosition, camera.up);
 
-    shader->SetParameter(shader->GetParameter("EyePosition"), EyePos);
+    glm::mat4 mv(glm::translate(camera.view * model, -camera.position));
+    //glm::mat4 mv(camera.view * model);
+
+    glm::mat4 mvp(camera.perspective * mv);
+
+    shader->SetParameter(shader->GetParameter("EyePosition"), camera.position);
     shader->SetParameter(shader->GetParameter("World"), model);
     shader->SetParameter(shader->GetParameter("WorldViewProjection"), mvp);
 

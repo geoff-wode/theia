@@ -24,7 +24,7 @@ struct MaterialStruct
 };
 
 // Standard shader parameters:
-uniform mat4	World;		// transforms the model into world space
+uniform mat4	World;		// transforms a vector into world space
 uniform mat4	View;		// transforms a vector into view space
 uniform mat4	Projection;	// transforms a vector into screen space
 uniform mat4	WorldView;	// (View * World)
