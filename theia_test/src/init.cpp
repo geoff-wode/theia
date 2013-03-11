@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <theia/graphics/gl/gl_loader.h>
+#include <theia/misc/debug.h>
 
 //----------------------------------------------
 
@@ -53,5 +54,7 @@ void InitSystem(int screenWidth, int screenHeight)
   }
   ConfigureSDL();
   ogl_LoadFunctions();
+  LOG("GL v%d.%d\n", ogl_GetMajorVersion(), ogl_GetMinorVersion());
+  LOG("GLSL version: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
   ConfigureGL();
 }

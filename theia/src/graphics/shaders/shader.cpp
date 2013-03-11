@@ -85,12 +85,18 @@ void Shader::Activate()
     {
       switch (params[i].type)
       {
-      case GL_FLOAT:      glUniform1fv(params[i].location, 1, params[i].data); break;
-      case GL_FLOAT_VEC2: glUniform2fv(params[i].location, 1, params[i].data); break;
-      case GL_FLOAT_VEC3: glUniform3fv(params[i].location, 1, params[i].data); break;
-      case GL_FLOAT_VEC4: glUniform4fv(params[i].location, 1, params[i].data); break;
-      case GL_FLOAT_MAT3: glUniformMatrix3fv(params[i].location, 1, GL_FALSE, params[i].data); break;
-      case GL_FLOAT_MAT4: glUniformMatrix4fv(params[i].location, 1, GL_FALSE, params[i].data); break;
+      case GL_FLOAT:      glUniform1fv(params[i].location, 1, (float*)params[i].data); break;
+      case GL_FLOAT_VEC2: glUniform2fv(params[i].location, 1, (float*)params[i].data); break;
+      case GL_FLOAT_VEC3: glUniform3fv(params[i].location, 1, (float*)params[i].data); break;
+      case GL_FLOAT_VEC4: glUniform4fv(params[i].location, 1, (float*)params[i].data); break;
+      case GL_DOUBLE:     glUniform1dv(params[i].location, 1, (double*)params[i].data); break;
+      case GL_DOUBLE_VEC2:glUniform2dv(params[i].location, 1, (double*)params[i].data); break;
+      case GL_DOUBLE_VEC3:glUniform3dv(params[i].location, 1, (double*)params[i].data); break;
+      case GL_DOUBLE_VEC4:glUniform4dv(params[i].location, 1, (double*)params[i].data); break;
+      case GL_FLOAT_MAT3: glUniformMatrix3fv(params[i].location, 1, GL_FALSE, (float*)params[i].data); break;
+      case GL_FLOAT_MAT4: glUniformMatrix4fv(params[i].location, 1, GL_FALSE, (float*)params[i].data); break;
+      case GL_DOUBLE_MAT3:glUniformMatrix3dv(params[i].location, 1, GL_FALSE, (double*)params[i].data); break;
+      case GL_DOUBLE_MAT4:glUniformMatrix4dv(params[i].location, 1, GL_FALSE, (double*)params[i].data); break;
       default: ASSERT(false); break;
       }
       params[i].dirty = false;
@@ -115,7 +121,7 @@ Shader::Parameter* const Shader::GetParameter(const char* const name)
 
 //--------------------------------------------------------------------------------
 
-static void CacheParameter(Shader::Parameter* const param, const float* value, size_t size)
+static void CacheParameter(Shader::Parameter* const param, const void* const value, size_t size)
 {
   if (param && (0 != memcmp(param->data, value, size)))
   {
@@ -142,6 +148,22 @@ void Shader::SetParameter(Parameter* const param, const glm::vec4& value)
 {
   CacheParameter(param, glm::value_ptr(value), sizeof(value));
 }
+void Shader::SetParameter(Parameter* const param, double value)
+{
+  CacheParameter(param, &value, sizeof(value));
+}
+void Shader::SetParameter(Parameter* const param, const glm::dvec2& value)
+{
+  CacheParameter(param, glm::value_ptr(value), sizeof(value));
+}
+void Shader::SetParameter(Parameter* const param, const glm::dvec3& value)
+{
+  CacheParameter(param, glm::value_ptr(value), sizeof(value));
+}
+void Shader::SetParameter(Parameter* const param, const glm::dvec4& value)
+{
+  CacheParameter(param, glm::value_ptr(value), sizeof(value));
+}
 void Shader::SetParameter(Parameter* const param, const glm::mat3& value)
 {
   CacheParameter(param, glm::value_ptr(value), sizeof(value));
@@ -149,6 +171,30 @@ void Shader::SetParameter(Parameter* const param, const glm::mat3& value)
 void Shader::SetParameter(Parameter* const param, const glm::mat4& value)
 {
   CacheParameter(param, glm::value_ptr(value), sizeof(value));
+}
+void Shader::SetParameter(Parameter* const param, const glm::dmat3& value)
+{
+  glm::mat3 f;
+  for (int i = 0; i < 3; ++i)
+  {
+    for (int j = 0; j < 3; ++j)
+    {
+      f[i][j] = (float)value[i][j];
+    }
+  }
+  CacheParameter(param, glm::value_ptr(f), sizeof(f));
+}
+void Shader::SetParameter(Parameter* const param, const glm::dmat4& value)
+{
+  glm::mat4 f;
+  for (int i = 0; i < 4; ++i)
+  {
+    for (int j = 0; j < 4; ++j)
+    {
+      f[i][j] = (float)value[i][j];
+    }
+  }
+  CacheParameter(param, glm::value_ptr(f), sizeof(f));
 }
 
 //--------------------------------------------------------------------------------

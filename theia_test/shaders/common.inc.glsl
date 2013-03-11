@@ -8,7 +8,7 @@
 #version 330
 
 // Useful constants...
-#define PI				(3.141592f)
+#define PI				(3.141592)
 #define TWO_PI			(2.0f * PI)
 #define HALF_PI			(0.5f * PI)
 #define ONE_OVER_PI		(1.0f / PI)
@@ -27,10 +27,11 @@ struct MaterialStruct
 uniform mat4	World;		// transforms the model into world space
 uniform mat4	View;		// transforms a vector into view space
 uniform mat4	Projection;	// transforms a vector into screen space
-uniform mat4	WorldView;	// pre-computed (View * World)
-uniform mat4	WorldViewProjection;	// pre-computed (Projection * View * World)
-uniform vec3	EyePosition;	// world-space position of the "eye"
+uniform mat4	WorldView;	// (View * World)
+uniform mat4	WorldViewProjection;	// (Projection * View * World)
 uniform vec3	AmbientLight;	// RGB value of the ambient light
+
+uniform vec3	EyePosition;	// world-space position of the "eye"
 
 //-----------------------------------------------------------------------------------
 // Return a texture coordinate based on the surface normal of an ellipsoid.
