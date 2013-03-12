@@ -25,6 +25,38 @@ bool OnLatLonLine(vec2 textureCoord)
 	return any(lessThan(distanceToLine, dF));
 }
 
+// Return a value fractal Brownian motion value for point P.
+// "lacunarity" controls frequency over each octave.
+// "gain" controls amplitude over each octave.
+float fBm(vec2 P, int octaves, float lacunarity, float gain)
+{
+  float frequency = 1;
+  float amplitude = 0.5;
+  float sum = 0;
+  for (int i = 0; i < octaves; i++)
+  {
+    sum += snoise(P * frequency) * amplitude;
+    frequency *= lacunarity;
+    amplitude *= gain;
+  }
+  return sum;
+}
+
+// Similar to fBm but uses the sum of abs(noise).
+float Turbulence(vec2 P, int octaves, float lacunarity, float gain)
+{
+  float frequency = 1;
+  float amplitude = 0.5;
+  float sum = 0;
+  for (int i = 0; i < octaves; i++)
+  {
+    sum += abs(snoise(P * frequency)) * amplitude;
+    frequency *= lacunarity;
+    amplitude *= gain;
+  }
+  return sum;
+}
+
 // Lighting calculation.
 vec3 ComputeLight(vec3 P, vec3 N, MaterialStruct material)
 {
@@ -91,13 +123,8 @@ void main()
 	//else
 	{
 		MaterialStruct material = Material;
-		//material.Kd = BrickColour(textureCoord);
 
-		material.Kd = (
-			snoise(17 * textureCoord) +
-			snoise(119 * textureCoord + vec2(37)) +
-			snoise(137 * textureCoord - vec2(23))
-			);
+		material.Kd = vec3(Turbulence(textureCoord, 16, 5.1753, 0.49357));
 
 		vec3 N = normalize(vertexSurfaceNormal);
 		fragColour.rgb = ComputeLight(vertexWorldPos, N, material);
