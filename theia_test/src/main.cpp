@@ -14,7 +14,7 @@
 #include <theia/graphics/gl/gl_loader.h>
 #include "../resources.h"
 
-// Fucking steam-powered Windows segmented memory cruft..!
+// Fucking steam-powered Windows segmented memory cruft...!
 #undef near
 #undef far
 
