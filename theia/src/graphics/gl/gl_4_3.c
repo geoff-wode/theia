@@ -1907,14 +1907,14 @@ int ogl_GetMinorVersion()
 {
 	if(g_major_version == 0)
 		GetGLVersion();
-	return g_major_version;
+	return g_minor_version;
 }
 
 int ogl_GetMajorVersion()
 {
 	if(g_major_version == 0) //Yes, check the major version to get the minor one.
 		GetGLVersion();
-	return g_minor_version;
+	return g_major_version;
 }
 
 int ogl_IsVersionGEQ(int majorVersion, int minorVersion)

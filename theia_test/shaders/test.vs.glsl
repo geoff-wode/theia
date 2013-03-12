@@ -1,20 +1,17 @@
-#version 330
 
 layout (location = 0) in vec3 inPosition;
 
-uniform mat4	ViewProjection;
-uniform mat4	World;
-uniform float	Radius;
-
 out vec3 vertexWorldPos;
-out vec3 vertexObjectPos;
+out vec3 vertexSurfacePos;
+out vec3 vertexSurfaceNormal;
 
 void main()
 {
-	vec3 P = normalize(inPosition);
-	vec4 worldPos = World * vec4(Radius * P, 1);
-	gl_Position = ViewProjection * worldPos;
+	vec4 P = vec4(inPosition + EyePosition, 1);
+	gl_Position = WorldViewProjection * P;
 
-	vertexWorldPos = worldPos.xyz;
-	vertexObjectPos = inPosition.xyz;
+	vec3 N = normalize(inPosition);
+	vertexSurfaceNormal = mat3(World) * N;
+	vertexWorldPos = World * vec4(inPosition,1);
+	vertexSurfacePos = inPosition;
 }

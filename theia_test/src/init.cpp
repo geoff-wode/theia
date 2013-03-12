@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <theia/graphics/gl/gl_loader.h>
+#include <theia/misc/debug.h>
 
 //----------------------------------------------
 
@@ -41,17 +42,19 @@ static void ConfigureGL()
 
 //----------------------------------------------
 
-void InitSystem()
+void InitSystem(int screenWidth, int screenHeight)
 {
   SDL_Init(SDL_INIT_EVERYTHING);
   atexit(SDL_Quit);
 
   ConfigureSDL();
-  if (NULL == SDL_SetVideoMode(800, 600, 32, SDL_OPENGL | SDL_HWSURFACE))
+  if (NULL == SDL_SetVideoMode(screenWidth, screenHeight, 32, SDL_OPENGL | SDL_HWSURFACE))
   {
     exit(EXIT_FAILURE);
   }
   ConfigureSDL();
   ogl_LoadFunctions();
+  LOG("GL v%d.%d\n", ogl_GetMajorVersion(), ogl_GetMinorVersion());
+  LOG("GLSL version: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
   ConfigureGL();
 }

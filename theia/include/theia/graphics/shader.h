@@ -21,7 +21,7 @@ namespace theia
       bool dirty;       // whether the cache is out of step with the GPU side, forcing an upload on Shader::Apply if it is
       GLuint location;  // as given by the "layout (location = n)" attribute declaration
       GLenum type;      // the type of the data stored in the attribute (gleaned from the shader program itself)
-      float data[16];   // a CPU-side cache of the data for quick recall and to prevent unnecessary GL calls
+      uint8_t data[16 * sizeof(double)]; // a CPU-side cache of the data for quick recall and to prevent unnecessary GL calls
       GLchar name[32];  // the name of the parameter (gleaned from the shader program itself)
     };
 
@@ -34,8 +34,8 @@ namespace theia
     /// @param[in] fragmentSrc  Pointer to the nul-terminated source code of the fragment shader stage source code.
     ///
     /// @return true if compilation succeeded, otherwise false.
-    bool Compile(const char* vertexSrc, const char* fragmentSrc);
-    bool Compile(uint32_t vertexShaderResource, uint32_t fragmentShaderResource);
+    bool Compile(const char* commonSrc, const char* vertexSrc, const char* fragmentSrc);
+    bool Compile(uint32_t commonResource, uint32_t vertexShaderResource, uint32_t fragmentShaderResource);
 
     /// Make this shader active and copy all modified parameter values to the GPU.
     void Activate();
@@ -46,7 +46,15 @@ namespace theia
     void SetParameter(Parameter* const param, const glm::vec2& value);
     void SetParameter(Parameter* const param, const glm::vec3& value);
     void SetParameter(Parameter* const param, const glm::vec4& value);
+    void SetParameter(Parameter* const param, const glm::mat3& value);
     void SetParameter(Parameter* const param, const glm::mat4& value);
+
+    void SetParameter(Parameter* const param, double value);
+    void SetParameter(Parameter* const param, const glm::dvec2& value);
+    void SetParameter(Parameter* const param, const glm::dvec3& value);
+    void SetParameter(Parameter* const param, const glm::dvec4& value);
+    void SetParameter(Parameter* const param, const glm::dmat3& value);
+    void SetParameter(Parameter* const param, const glm::dmat4& value);
 
 
     GLuint program;

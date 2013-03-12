@@ -8,15 +8,7 @@ namespace theia
 {
   struct MaterialState
   {
-    MaterialState(ShaderPtr shader)
-      : Ke(0), Ka(0.1f), Kd(0.5f), Ks(0.6f, 0.6f, 0.6f, 32),
-        shader(shader),
-        emissiveParam(shader->GetParameter("Ke")),
-        ambientParam(shader->GetParameter("Ka")),
-        diffuseParam(shader->GetParameter("Kd")),
-        specularParam(shader->GetParameter("Ks"))
-    {
-    }
+    MaterialState(ShaderPtr shader);
 
     glm::vec3 Ke;
     glm::vec3 Ka;
