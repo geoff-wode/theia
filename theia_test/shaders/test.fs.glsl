@@ -90,11 +90,17 @@ void main()
 	//}
 	//else
 	{
-		MaterialStruct brick = Material;
-		brick.Kd = BrickColour(textureCoord);
+		MaterialStruct material = Material;
+		//material.Kd = BrickColour(textureCoord);
+
+		material.Kd = (
+			snoise(17 * textureCoord) +
+			snoise(119 * textureCoord + vec2(37)) +
+			snoise(137 * textureCoord - vec2(23))
+			);
 
 		vec3 N = normalize(vertexSurfaceNormal);
-		fragColour.rgb = ComputeLight(vertexWorldPos, N, brick);
+		fragColour.rgb = ComputeLight(vertexWorldPos, N, material);
 		fragColour.a = 1.0f;
 	}
 
