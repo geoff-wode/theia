@@ -108,7 +108,7 @@
     <ResourceCompile Include="resources.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\common.inc.glsl" />
+    <None Include="shaders\common.glsl" />
     <None Include="shaders\test.fs.glsl" />
     <None Include="shaders\test.vs.glsl" />
   </ItemGroup>
