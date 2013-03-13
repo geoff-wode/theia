@@ -6,4 +6,4 @@
 
 IDR_TEST_FS       TEXTFILE  ".\\shaders\\test.fs.glsl"
 IDR_TEST_VS       TEXTFILE  ".\\shaders\\test.vs.glsl"
-IDR_SHADER_COMMON TEXTFILE  ".\\shaders\\common.inc.glsl"
+IDR_SHADER_COMMON TEXTFILE  ".\\shaders\\common.glsl"

@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include <theia/graphics/gl/wgl_wgl.h>
+#include "wgl_wgl.h"
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>

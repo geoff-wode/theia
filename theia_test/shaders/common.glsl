@@ -20,7 +20,7 @@ struct MaterialStruct
 	vec3	Ke;		// emissive colour
 	vec3	Ka;		// ambient reflectance
 	vec3	Kd;		// diffuse colour
-	vec4	Ks;		// specular colour in rgb, shininess in a
+	vec4	Ks;		// specular colour in rgb, shininess in alpha
 };
 
 // Standard shader parameters:

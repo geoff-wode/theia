@@ -1,5 +1,7 @@
+#define GLM_SWIZZLE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
 #include <SDL.h>
 #include <vector>
 #include <stdint.h>
@@ -12,12 +14,16 @@
 #include <theia/graphics/gl/gl_loader.h>
 #include "../resources.h"
 
-// Fucking steam-powered Windows segmented memory cruft..!
+// Fucking steam-powered Windows segmented memory cruft...!
 #undef near
 #undef far
 
 //----------------------------------------------
-const int gridSize = 128;
+const int screenWidth = 1280;
+const int screenHeight = 720;
+const float halfFOV = 45.0f;
+const float aspectRatio = (float)screenWidth / (float)screenHeight;
+const int gridSize = 256;
 //----------------------------------------------
 
 struct Vertex
@@ -71,11 +77,11 @@ const struct Tangent
 
 //----------------------------------------------
 
-extern void InitSystem();
+extern void InitSystem(int screenWidth, int screenHeight);
 
 //----------------------------------------------
 
-static void BuildGrid(const glm::vec3& X, const glm::vec3& Y, int gridSize, std::vector<Vertex>& vertices)
+static void BuildGrid(const glm::vec3& X, const glm::vec3& Y, int gridSize, Vertex* vertices)
 {
   const glm::vec3 normal(glm::normalize(glm::cross(X, Y)));
   const glm::vec3 stepX(X / ((float)gridSize-1));
@@ -88,7 +94,7 @@ static void BuildGrid(const glm::vec3& X, const glm::vec3& Y, int gridSize, std:
   {
     for (int x = 0; x < gridSize; ++x)
     {
-      vertices[i].position = P + ((float)x * stepX) + (0.5f * normal);
+      vertices[i].position = Radius * glm::normalize(P + ((float)x * stepX) + (0.5f * normal));
       ++i;
     }
     P += stepY;
@@ -127,7 +133,7 @@ static void BuildIndices(int gridSize, std::vector<unsigned short>& indices)
 int main(int argc, char* argv[])
 {
   LOG("----\n");
-  InitSystem();
+  InitSystem(1280,720);
 
   const glm::vec3 PlanetPosition(500000,0,500000);
 
@@ -144,81 +150,52 @@ int main(int argc, char* argv[])
 
 
   theia::ShaderPtr shader(new theia::Shader());
-  shader->Compile(IDR_TEST_VS, IDR_TEST_FS);
+  shader->Compile(IDR_SHADER_COMMON, IDR_TEST_VS, IDR_TEST_FS);
 
   theia::MaterialState material(shader);
   theia::Material::Apply(material);
 
-  theia::Shader::Parameter* const worldParam = shader->GetParameter("World");
-  theia::Shader::Parameter* const viewProjParam = shader->GetParameter("ViewProjection");
-
-  const struct Tangent
+  // create one vertex buffer with all the vertices for all 6 faces of the cube...
+  theia::VertexBufferPtr sphereVertices;
   {
-    glm::vec3 x;
-    glm::vec3 y;
-  } tangents[] =
-  {
-    { glm::vec3(1,0,0), glm::vec3(0,1,0) },
-    { glm::vec3(0,0,-1),glm::vec3(0,1,0) },
-    { glm::vec3(-1,0,0),glm::vec3(0,1,0) },
-    { glm::vec3(0,0,1),glm::vec3(0,1,0) },
-    { glm::vec3(1,0,0),glm::vec3(0,0,-1) },
-    { glm::vec3(1,0,0),glm::vec3(0,0,1) }
-  };
-  const int numFaces = sizeof(tangents)/sizeof(tangents[0]);
-
-  std::vector<Vertex> vertices(gridSize * gridSize);
-
-  std::vector<theia::VertexBufferPtr> faces(numFaces);
-
-  for (int i = 0; i < numFaces; ++i)
-  {
-    BuildGrid(tangents[i].x, tangents[i].y, gridSize, vertices);
-    faces[i] = theia::VertexBuffer::Create(vertices.size() * sizeof(Vertex));
-    faces[i]->SetData(vertices.size() * sizeof(Vertex), 0, vertices.data());
+    std::vector<Vertex> vertices(gridSize * gridSize * 6);
+    for (int face = 0; face < 6; ++face)
+    {
+      const int offset = gridSize * gridSize;
+      BuildGrid(tangents[face].x, tangents[face].y, gridSize, vertices.data() + (offset * face));
+    }
+    sphereVertices = theia::VertexBuffer::Create(vertices.size() * sizeof(Vertex));
+    sphereVertices->SetData(vertices.size() * sizeof(Vertex), 0, vertices.data());
   }
 
-  std::vector<unsigned short> indices(gridSize * 2 * (gridSize-1));
-  BuildIndices(gridSize, indices);
-  theia::IndexBufferPtr ib = theia::IndexBuffer::Create(indices.size() * sizeof(unsigned short));
-  ib->SetData(indices.size() * sizeof(unsigned short), 0, indices.data());
-
-  GLuint vao[numFaces];
-  glGenVertexArrays(numFaces, vao);
-  for (int i = 0; i < numFaces; ++i)
+  // Create one index buffer that defines a triangle strip for just a single face of the cube.
+  // An instanced render call is used later to run this triangle strip 6 times over the vertex
+  // buffer...
+  const int numIndices = gridSize * 2 * (gridSize-1);
+  theia::IndexBufferPtr ib = theia::IndexBuffer::Create(numIndices * sizeof(unsigned short));
   {
-    glBindVertexArray(vao[i]);
+    std::vector<unsigned short> indices(numIndices);
+    BuildIndices(gridSize, indices);
+    ib->SetData(indices.size() * sizeof(unsigned short), 0, indices.data());
+  }
+
+  // Create an object to hold all the buffer state in a single place...
+  GLuint vao;
+  {
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, faces[i]->buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, sphereVertices->buffer);
     Vertex::Configure();
     glBindVertexArray(0);
-
-    // Do this >outside< of the VAO binding..!
+    // VAO is now configured so unset the GL global buffer bind state...
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
   
-  // set the radius of the sphere...
-  const float radius = 1500;
-  // place the sphere at the world origin...
-  const glm::vec3 target(0);
-  // set the eye position to some multiple of the radius (so we can see the damn thing)...
-  const glm::vec3 eyePos(0,0,radius * 5);
-  // try to minimise the distance between the near and far bounding planes:
-  // near must be closer than the sphere while far bounding plane must be at least (near + sphere_location)...
-  const float nearPlane = radius * 1.1f;
-  const float farPlane = glm::distance(eyePos, target) + nearPlane;
-
-  glm::mat4 view(glm::lookAt(eyePos, target, Up));
-  glm::mat4 projection(glm::perspective(45.0f, 800.0f/600.0f, nearPlane, farPlane));
-
-  shader->SetParameter(shader->GetParameter("AmbientLightColour"), glm::vec3(1));
-  shader->SetParameter(shader->GetParameter("LightPosition"), glm::vec3(radius * 5));
-  shader->SetParameter(shader->GetParameter("LightColour"), glm::vec3(1));
+  shader->SetParameter(shader->GetParameter("AmbientLight"), glm::vec3(0.2f));
   shader->SetParameter(shader->GetParameter("GridLineWidth"), glm::vec2(1));
-  shader->SetParameter(shader->GetParameter("GridResolution"), glm::vec2(1.0f / 10.0f, 1.0f / 15.0f));
-  shader->SetParameter(shader->GetParameter("Radius"), radius);
-  shader->SetParameter(viewProjParam, projection * view);
+  shader->SetParameter(shader->GetParameter("GridResolution"), glm::vec2(1.0f / 20.0f, 1.0f / 10.0f));
 
   const float frameRate = 1000.0f / 60.0f;
   float previousTime = 0.0f;
@@ -256,13 +233,20 @@ int main(int argc, char* argv[])
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    shader->SetParameter(worldParam, world);
     shader->Activate();
 
-    for (int i = 0; i < numFaces; ++i)
+    glBindVertexArray(vao);
+    // Render the vertices as 6 instances of indexed triangle strips...
+    for (int i = 0; i < 6; ++i)
     {
-      glBindVertexArray(vao[i]);
-      glDrawElements(GL_TRIANGLE_STRIP, indices.size(), GL_UNSIGNED_SHORT, (const void*)0);
+      // See http://stackoverflow.com/questions/9431923/using-an-offset-with-vbos-in-opengl/9434876#9434876
+      // for a quick summary...
+      glDrawElementsBaseVertex(
+        GL_TRIANGLE_STRIP,        // what kind of thing to render
+        numIndices,               // how many elements (_NOT_ primitives!) to render
+        GL_UNSIGNED_SHORT,        // index type
+        (const void*)0,           // offset from start of index buffer
+        gridSize * gridSize * i); // offset to add to each index
     }
 
     SDL_GL_SwapBuffers();
