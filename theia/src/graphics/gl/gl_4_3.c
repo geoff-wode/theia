@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "gl_4_3.h"
+#include <theia/graphics/gl/gl_loader.h>
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
