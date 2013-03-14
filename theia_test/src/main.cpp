@@ -213,7 +213,7 @@ int main(int argc, char* argv[])
 
     // Constant translation and axial tilt...
     const glm::mat4 planet(   glm::translate(MatrixIdentity, PlanetPosition)
-                            * glm::rotate(MatrixIdentity, 20.0f, glm::vec3(0,0,1))
+                            * glm::rotate(MatrixIdentity, 20.0f, glm::normalize(glm::vec3(-1,0,1)))
                           );
     // Rotation animation...
     glm::mat4 rotation(glm::rotate(MatrixIdentity, angle, Up));
