@@ -94,7 +94,7 @@ static void BuildGrid(const glm::vec3& X, const glm::vec3& Y, int gridSize, Vert
   {
     for (int x = 0; x < gridSize; ++x)
     {
-      vertices[i].position = Radius * glm::normalize(P + ((float)x * stepX) + (0.5f * normal));
+      vertices[i].position = P + ((float)x * stepX) + (0.5f * normal);
       ++i;
     }
     P += stepY;
@@ -140,14 +140,15 @@ int main(int argc, char* argv[])
   CameraState camera;
   camera.up = Up;
   camera.target = Forward;
+  
   // set the eye position to some multiple of the Radius (so we can see the damn thing)...
   camera.position = PlanetPosition + (glm::vec3(0,0,-1) * Radius * 3.0f);
+
   // try to minimise the distance between the near and far bounding planes:
   // near must be closer than the sphere while far bounding plane must be at least (near + sphere_location)...
-  camera.near = Radius * 1.1f;
+    camera.near = Radius * 1.1f;
   camera.far = glm::distance(camera.position, PlanetPosition) + camera.near;
   camera.perspective = glm::perspective(halfFOV, aspectRatio, camera.near, camera.far);
-
 
   theia::ShaderPtr shader(new theia::Shader());
   shader->Compile(IDR_SHADER_COMMON, IDR_TEST_VS, IDR_TEST_FS);
@@ -193,6 +194,7 @@ int main(int argc, char* argv[])
     glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
   
+  shader->SetParameter(shader->GetParameter("Radius"), Radius);
   shader->SetParameter(shader->GetParameter("AmbientLight"), glm::vec3(0.2f));
   shader->SetParameter(shader->GetParameter("GridLineWidth"), glm::vec2(1));
   shader->SetParameter(shader->GetParameter("GridResolution"), glm::vec2(1.0f / 20.0f, 1.0f / 10.0f));
@@ -222,8 +224,7 @@ int main(int argc, char* argv[])
     // relative to the eye before making the final screen-space perspective transform...
     camera.view = glm::lookAt(camera.position, PlanetPosition, camera.up);
 
-    glm::mat4 mv(glm::translate(camera.view * model, -camera.position));
-    //glm::mat4 mv(camera.view * model);
+    glm::mat4 mv(camera.view * model);
 
     glm::mat4 mvp(camera.perspective * mv);
 

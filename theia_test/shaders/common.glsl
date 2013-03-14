@@ -9,10 +9,10 @@
 
 // Useful constants...
 #define PI				(3.141592)
-#define TWO_PI			(2.0f * PI)
-#define HALF_PI			(0.5f * PI)
-#define ONE_OVER_PI		(1.0f / PI)
-#define ONE_OVER_2_PI	(1.0f / TWO_PI)
+#define TWO_PI			(2.0 * PI)
+#define HALF_PI			(0.5 * PI)
+#define ONE_OVER_PI		(1.0 / PI)
+#define ONE_OVER_2_PI	(1.0 / TWO_PI)
 
 // Surface material values...
 struct MaterialStruct
